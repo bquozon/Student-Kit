@@ -1,10 +1,11 @@
-"""Pure helpers with no database: card order, the "New" badge, domain normalisation, email → university."""
+"""Pure helpers with no database: card order, the "New" badge, domain normalisation, email → university,
+safe redirects."""
 
 from __future__ import annotations
 
 import re
 from datetime import datetime, timedelta, timezone
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlencode, urlsplit
 
 NEW_DAYS = 14
 NEW_MAX_USES = 3
@@ -49,3 +50,16 @@ def university_for(email: str, domains: dict[str, str]) -> str | None:
     """The university code for a student email, or None. Only exact listed domains count (no subdomains)."""
     m = EMAIL.match(email.strip().lower())
     return domains.get(m.group(1)) if m else None
+
+
+def safe_next(url: str | None, default: str = "/") -> str:
+    """A local path only: no other site, no //host, no backslash tricks."""
+    if not url or not url.startswith("/") or url.startswith("//") or "\\" in url:
+        return default
+    return url
+
+
+def with_msg(path: str, m: str) -> str:
+    p = urlsplit(path)
+    q = [(k, v) for k, v in parse_qsl(p.query) if k != "m"] + [("m", m)]
+    return f"{p.path}?{urlencode(q)}"

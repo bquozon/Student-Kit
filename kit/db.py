@@ -37,7 +37,9 @@ def tx(con: sqlite3.Connection):
     con.execute("COMMIT")
 
 
-def log(con: sqlite3.Connection, user_id: int | None, action: str, item_id: int | None = None, detail: str = "") -> None:
+def log(
+    con: sqlite3.Connection, user_id: int | None, action: str, item_id: int | None = None, detail: str = ""
+) -> None:
     con.execute(
         "INSERT INTO mod_log (user_id, action, item_id, detail) VALUES (?, ?, ?, ?)", (user_id, action, item_id, detail)
     )
@@ -49,10 +51,16 @@ def save_item(con: sqlite3.Connection, item_id: int | None, d: dict) -> int:
     cols = ("category_id", "name", "url", "description", "kind")
     if item_id is None:
         cur = con.execute(
-            "INSERT INTO items (category_id, name, url, description, kind, status, pinned, submitted_by, note, approved_at)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (*(d[c] for c in cols), d.get("status", "pending"), int(d.get("pinned", 0)), d.get("submitted_by"),
-             d.get("note"), d.get("approved_at")),
+            "INSERT INTO items (category_id, name, url, description, kind, status, pinned, submitted_by, note,"
+            " approved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                *(d[c] for c in cols),
+                d.get("status", "pending"),
+                int(d.get("pinned", 0)),
+                d.get("submitted_by"),
+                d.get("note"),
+                d.get("approved_at"),
+            ),
         )
         item_id = cur.lastrowid
     else:

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}My suggestions · Swiss Student Kit{% endblock %}
+{% block body %}
+<main class="wrap page">
+  <h1>My suggestions</h1>
+  {% if rows %}
+  <table>
+    <thead><tr><th>Service</th><th>Sent</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td><a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.name }}</a>{% if r.rejection_reason %}<br><span class="hint">Reason: {{ r.rejection_reason }}</span>{% endif %}</td>
+        <td>{{ r.created_at|day }}</td>
+        <td><span class="status {{ r.status }}">{{ {"pending": "Waiting", "approved": "Live", "rejected": "Not added", "archived": "Archived"}[r.status] }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>Nothing yet.</p>
+  {% endif %}
+  <div class="actions"><a class="btn" href="/suggest">Suggest a service</a></div>
+</main>
+{% endblock %}

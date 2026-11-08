@@ -1,0 +1,20 @@
+{# the editable fields of an item; used in the queue and on the edit page #}
+{% macro fields(item, cities, categories, kinds) %}
+  {% set p = "f" ~ item.id ~ "-" %}
+  <div class="two">
+    <div><label for="{{ p }}name">Name</label><input id="{{ p }}name" name="name" type="text" required maxlength="80" value="{{ item.name }}"></div>
+    <div><label for="{{ p }}url">URL</label><input id="{{ p }}url" name="url" type="url" required value="{{ item.url }}"></div>
+    <div><label for="{{ p }}cat">Category</label>
+      <select id="{{ p }}cat" name="category">{% for c in categories %}<option value="{{ c.slug }}"{% if c.slug == item.category %} selected{% endif %}>{{ c.label }}</option>{% endfor %}</select></div>
+    <div><label for="{{ p }}kind">Kind</label>
+      <select id="{{ p }}kind" name="kind">{% for k in kinds %}<option{% if k == item.kind %} selected{% endif %}>{{ k }}</option>{% endfor %}</select></div>
+  </div>
+  <fieldset><legend>Cities</legend><div class="checks">
+    {% for c in cities %}<label><input type="checkbox" name="cities" value="{{ c.slug }}"{% if c.slug in item.cities %} checked{% endif %}> {{ c.label }}</label>{% endfor %}
+  </div></fieldset>
+  <fieldset><legend>Universities <span class="hint">(none ticked = ALL)</span></legend><div class="checks">
+    {% for c in cities %}{% for u in c.unis %}<label><input type="checkbox" name="universities" value="{{ u }}"{% if u in item.universities %} checked{% endif %}> {{ u }}</label>{% endfor %}{% endfor %}
+  </div></fieldset>
+  <label for="{{ p }}desc">Description <span class="hint">(max 140)</span></label>
+  <textarea id="{{ p }}desc" name="description" maxlength="140" required>{{ item.description }}</textarea>
+{% endmacro %}

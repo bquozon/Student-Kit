@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Log in · Swiss Student Kit{% endblock %}
+{% block body %}
+<main class="wrap page">
+  <h1>Log in</h1>
+  {% if sent %}
+    <p>We sent a login link to <b>{{ email }}</b>. It works once and expires in 15 minutes. Check your spam folder if it doesn't show up.</p>
+  {% else %}
+    <p>Use your university email. No password: we send you a link. You need to log in to suggest a service, mark the ones you use, or report a problem. Browsing needs no login.</p>
+    {% if error %}<p class="errors" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" action="/login">
+      <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="next" value="{{ next }}">
+      <label for="email">University email</label>
+      <input id="email" name="email" type="email" required autocomplete="email" value="{{ email or '' }}" placeholder="you@student.ethz.ch">
+      <p class="hint">Accepted: {% for d in domains %}@{{ d }}{{ ", " if not loop.last }}{% endfor %}</p>
+      <div class="actions"><button class="btn">Send me a login link</button></div>
+    </form>
+    <p class="hint">We store only your email, your university and the services you mark. <a href="/privacy">Privacy</a></p>
+  {% endif %}
+</main>
+{% endblock %}

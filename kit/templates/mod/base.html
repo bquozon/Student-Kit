@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Moderation · Swiss Student Kit{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block body %}
+<main class="wrap mod">
+  <h1>Moderation</h1>
+  <nav class="tabs" aria-label="Moderation">
+    {% for key, label, href in [("queue", "Queue", "/mod"), ("reports", "Reports", "/mod/reports"), ("items", "All items", "/mod/items"), ("categories", "Categories", "/mod/categories"), ("stats", "Stats", "/mod/stats"), ("log", "Log", "/mod/log")] %}
+      <a href="{{ href }}"{% if tab == key %} aria-current="page"{% endif %}>{{ label }}</a>
+    {% endfor %}
+  </nav>
+  {% block mod %}{% endblock %}
+</main>
+{% endblock %}

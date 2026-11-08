@@ -1,0 +1,21 @@
+{% extends "mod/base.html" %}
+{% block mod %}
+<p class="hint">The order here is the order of the tiles and sections on the public page.</p>
+<table>
+  <thead><tr><th>Category</th><th>Approved items</th><th>Move</th></tr></thead>
+  <tbody>
+  {% for c in rows %}
+    <tr>
+      <td>{{ c.label }}</td><td>{{ c.n }}</td>
+      <td>
+        <form class="inline" method="post" action="/mod/categories/{{ c.id }}/move">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="btn ghost small" name="dir" value="up"{% if loop.first %} disabled{% endif %} aria-label="Move {{ c.label }} up">↑</button>
+          <button class="btn ghost small" name="dir" value="down"{% if loop.last %} disabled{% endif %} aria-label="Move {{ c.label }} down">↓</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

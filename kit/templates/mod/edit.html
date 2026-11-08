@@ -1,0 +1,18 @@
+{% extends "mod/base.html" %}
+{% from "mod/_form.html" import fields %}
+{% block mod %}
+{% if errors %}<ul class="errors" role="alert">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+<form class="box" method="post" action="/mod/item/{{ item.id }}">
+  <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="back" value="/mod/items/{{ item.id }}">
+  <h3>{{ item.name }} <span class="status {{ item.status }}">{{ item.status }}</span></h3>
+  <p>{{ item.uses_count }} uses{% if item.submitter %} · suggested by {{ item.submitter }}{% endif %}{% if item.link_fails %} · {{ item.link_fails }} failed link check(s){% endif %}{% if item.rejection_reason %} · rejected: {{ item.rejection_reason }}{% endif %}</p>
+  {{ fields(item, cities, categories, kinds) }}
+  <div class="actions">
+    <button class="btn" name="action" value="save">Save</button>
+    {% if item.status == "pending" %}<button class="btn ghost" name="action" value="approve">Save and approve</button>{% endif %}
+    <button class="btn ghost small" name="action" value="{{ 'unpin' if item.pinned else 'pin' }}">{{ "Unpin" if item.pinned else "Pin" }}</button>
+    {% if item.status == "approved" %}<button class="btn bad small" name="action" value="archive">Archive</button>
+    {% elif item.status == "archived" %}<button class="btn ghost small" name="action" value="restore">Restore</button>{% endif %}
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Log in · Swiss Student Kit{% endblock %}
+{% block body %}
+<main class="wrap page">
+  <h1>Log in</h1>
+  {% if expired %}
+    <p class="errors">This link expired or was already used.</p>
+    <p><a class="btn" href="/login">Get a new link</a></p>
+  {% else %}
+    <form method="post" action="/login/verify">
+      <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="t" value="{{ t }}"><input type="hidden" name="next" value="{{ next }}">
+      <p>One click and you're in.</p>
+      <div class="actions"><button class="btn">Log me in</button></div>
+    </form>
+  {% endif %}
+</main>
+{% endblock %}

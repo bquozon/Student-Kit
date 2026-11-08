@@ -1,0 +1,47 @@
+{% extends "mod/base.html" %}
+{% macro ranking(rows, empty="Nothing yet.") %}
+  {% for name, count in rows %}
+    <div class="li"><i style="width:{{ [2, (100 * count / (rows[0][1] or 1))|round|int]|max }}%"></i><span>{{ name }}</span><b>{{ count|thousands }}</b></div>
+  {% else %}<p>{{ empty }}</p>{% endfor %}
+{% endmacro %}
+{% block mod %}
+<nav class="tabs" aria-label="Period">
+  {% for d, label in [(1, "Today"), (7, "7 days"), (30, "30 days"), (90, "90 days"), (365, "1 year")] %}
+    <a href="?days={{ d }}"{% if d == days %} aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>
+<div class="kpis">
+  <div class="kpi"><b>{{ s.visitors|thousands }}</b><span>visitors</span></div>
+  <div class="kpi"><b>{{ s.views|thousands }}</b><span>page views</span></div>
+  <div class="kpi"><b>{{ n.new_users|thousands }}</b><span>new students ({{ n.users|thousands }} total)</span></div>
+  <div class="kpi"><b>{{ n.new_uses|thousands }}</b><span>“I use this” ({{ n.uses|thousands }} total)</span></div>
+  <div class="kpi"><b>{{ n.suggested|thousands }}</b><span>suggestions</span></div>
+  <div class="kpi"><b>{{ n.pending }}</b><span><a href="/mod">waiting in queue</a></span></div>
+  <div class="kpi"><b>{{ n.reports }}</b><span><a href="/mod/reports">open reports</a></span></div>
+  <div class="kpi"><b>{{ n.approved }}</b><span>services listed</span></div>
+</div>
+<div class="box">
+  {% if days > 1 %}
+    <h3>Visitors per day</h3>
+    <div class="chart" role="img" aria-label="Visitors per day">
+      {% for d, v, w in s.series %}<div style="height:{{ [1, (100 * v / peak)|round|int]|max }}%" title="{{ d }}: {{ v }} visitors, {{ w }} views"></div>{% endfor %}
+    </div>
+    <div class="cx"><span>{{ s.series[0][0] }}</span><span>{{ s.series[-1][0] }}</span></div>
+  {% else %}
+    <h3>First visits by hour (today)</h3>
+    <div class="chart" role="img" aria-label="First visits by hour">
+      {% for h, v in s.hours %}<div style="height:{{ [1, (100 * v / peak)|round|int]|max }}%" title="{{ h }}:00 · {{ v }}"></div>{% endfor %}
+    </div>
+    <div class="cx"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+  {% endif %}
+</div>
+<div class="cols">
+  {% for key, title in groups.items() %}
+    <div class="box"><h3>{{ title }}</h3>{{ ranking(s.groups[key]) }}</div>
+  {% endfor %}
+  {% for title, rows in tables.items() %}
+    <div class="box"><h3>{{ title }}</h3>{{ ranking(rows) }}</div>
+  {% endfor %}
+</div>
+<p class="hint">Anonymous daily totals: no cookies, no IP addresses stored, bots left out. Student and item numbers come from the database.</p>
+{% endblock %}

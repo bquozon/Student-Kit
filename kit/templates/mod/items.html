@@ -1,0 +1,33 @@
+{% extends "mod/base.html" %}
+{% block mod %}
+<form method="get" class="actions" style="margin-top:0">
+  <input type="search" name="q" value="{{ q }}" placeholder="Name or URL" aria-label="Search items" style="max-width:260px">
+  <select name="status" aria-label="Status" style="max-width:180px">
+    {% for s in ["", "approved", "pending", "rejected", "archived"] %}<option value="{{ s }}"{% if s == status %} selected{% endif %}>{{ s or "Any status" }}</option>{% endfor %}
+  </select>
+  <button class="btn small">Filter</button>
+  <span class="hint">{{ rows|length }} items</span>
+</form>
+<table>
+  <thead><tr><th>Name</th><th>Category</th><th>Cities</th><th>Status</th><th>Uses</th><th>Actions</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td><a href="/mod/items/{{ r.id }}">{{ r.name }}</a>{% if r.pinned %} 📌{% endif %}{% if r.link_fails %} <span class="warn" title="failed link checks">⚠ {{ r.link_fails }}</span>{% endif %}</td>
+      <td>{{ r.category }}</td>
+      <td>{{ r.cities }}</td>
+      <td><span class="status {{ r.status }}">{{ r.status }}</span></td>
+      <td>{{ r.uses_count }}</td>
+      <td>
+        <form class="inline" method="post" action="/mod/item/{{ r.id }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="back" value="{{ request.full_path.rstrip('?') }}">
+          <button class="btn ghost small" name="action" value="{{ 'unpin' if r.pinned else 'pin' }}">{{ "Unpin" if r.pinned else "Pin" }}</button>
+          {% if r.status == "approved" %}<button class="btn ghost small" name="action" value="archive">Archive</button>
+          {% elif r.status == "archived" %}<button class="btn ghost small" name="action" value="restore">Restore</button>{% endif %}
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

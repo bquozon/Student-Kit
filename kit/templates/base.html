@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{% block title %}Swiss Student Kit{% endblock %}</title>
+<meta name="description" content="{% block description %}The apps and websites that make studying, living and getting around easier for students in Swiss university cities.{% endblock %}">
+<meta name="theme-color" content="#fbf8ff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141122" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+<link rel="preload" href="{{ url_for('static', filename='fonts/bricolage.woff2') }}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+{% block head %}{% endblock %}
+<script src="{{ asset('app.js') }}" defer></script>
+</head>
+<body>
+<div class="wrap">
+  <nav class="me" aria-label="Account">
+    <a href="/">Home</a>
+    {% if user %}
+      <a href="/suggest">Suggest a service</a>
+      <a href="/mine">My suggestions</a>
+      {% if user.is_mod %}<a href="/mod">Moderation</a>{% endif %}
+      <form method="post" action="/logout"><input type="hidden" name="csrf" value="{{ csrf }}"><button title="{{ user.email }}">Log out</button></form>
+    {% else %}
+      <a href="/login?next={{ request.full_path.rstrip('?')|urlencode }}">Log in</a>
+    {% endif %}
+  </nav>
+  {% if flash %}<p class="flash" role="status">{{ flash }}</p>{% endif %}
+</div>
+{% block body %}{% endblock %}
+</body>
+</html>

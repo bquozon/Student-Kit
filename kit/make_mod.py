@@ -16,8 +16,7 @@ def make_mod(con, email: str) -> None:
     if not uni:
         raise SystemExit(f"{email}: not a university email listed in universities.email_domains, so it can't log in.")
     con.execute(
-        "INSERT INTO users (email, university_code, is_mod) VALUES (?, ?, 1)"
-        " ON CONFLICT(email) DO UPDATE SET is_mod=1",
+        "INSERT INTO users (email, university_code, is_mod) VALUES (?, ?, 1) ON CONFLICT(email) DO UPDATE SET is_mod=1",
         (email, uni),
     )
 

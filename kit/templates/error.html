@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ e.code }} · Swiss Student Kit{% endblock %}
+{% block body %}
+<main class="wrap page">
+  <h1>{{ {404: "Not found", 413: "Too big"}.get(e.code, "Something's off") }}</h1>
+  <p>{{ e.description }}</p>
+  <p><a class="btn" href="/">Back to the kit</a></p>
+</main>
+{% endblock %}

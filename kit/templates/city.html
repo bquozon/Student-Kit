@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ city.label }} Student Kit: apps and websites for students{% endblock %}
+{% block description %}The apps and websites that make studying, living and getting around {{ city.label }} easier for {{ unis|join(", ") }} students.{% endblock %}
+{% block head %}<link rel="canonical" href="{{ SITE_URL }}/{{ city.slug }}">{% endblock %}
+{% macro icon(cat) %}<svg class="i" viewBox="0 0 24 24" aria-hidden="true">{{ cat.icon_svg_paths|safe }}</svg>{% endmacro %}
+{% set here = request.full_path.rstrip('?') %}
+{% block body %}
+<header><div class="wrap hd">
+  <nav class="cities" aria-label="City">
+    {% for c in cities %}<a href="/{{ c.slug }}"{% if c.slug == city.slug %} aria-current="page"{% endif %}>{{ c.label }}</a>{% endfor %}
+  </nav>
+  <h1>{{ city.label }} Student <em>Kit</em></h1>
+  <p>The apps and websites that make studying, living and getting around easier. Pick your city, tap a category or just search.</p>
+  <nav class="tiles" aria-label="Categories">
+    {% for s in sections %}<a class="tile" href="#{{ s.cat.slug }}" style="--c:var(--c-{{ s.cat.slug }})">{{ icon(s.cat) }}<span>{{ s.cat.short_label }}</span></a>{% endfor %}
+  </nav>
+</div></header>
+
+<div class="bar"><div class="wrap">
+  <form role="search" method="get" action="/{{ city.slug }}">
+    <input id="q" name="q" type="search" value="{{ q }}" placeholder="Search: housing, menus, bike, jobs…" aria-label="Search services" autocomplete="off">
+    {% if u %}<input type="hidden" name="u" value="{{ u }}">{% endif %}
+  </form>
+  <nav class="seg" id="seg" aria-label="Filter by university">
+    {% for x in [""] + unis %}<a href="?u={{ x }}{{ '&q=' ~ q|urlencode if q }}" data-u="{{ x }}"{% if x == u %} aria-current="true"{% endif %}>{{ x or "All" }}</a>{% endfor %}
+  </nav>
+  <span class="count" id="count" aria-live="polite" data-total="{{ total }}">{{ shown }} of {{ total }}</span>
+</div></div>
+
+<main class="wrap">
+  {% for s in sections %}
+  <section class="cat" id="{{ s.cat.slug }}" style="--c:var(--c-{{ s.cat.slug }})"{% if s.hidden %} hidden{% endif %}>
+    <div class="head"><div class="badge">{{ icon(s.cat) }}</div><div><h2>{{ s.cat.label }}</h2><p class="sub">{{ s.cat.subtitle }}</p></div></div>
+    <div class="grid">
+      {% for i in s.cards %}
+      <article class="card" id="i{{ i.id }}" data-u="{{ i.unis }}" data-s="{{ i.s }}"{% if i.hidden %} hidden{% endif %}>
+        <div class="top">
+          <a class="name" href="{{ i.url }}" target="_blank" rel="noopener" data-id="{{ i.id }}">{{ i.name }}</a>
+          <span class="tags">{% if i.new %}<span class="tag new">New</span>{% endif %}<span class="tag k">{{ i.kind }}</span><span class="tag">{{ i.tag }}</span></span>
+        </div>
+        <p class="note">{{ i.description }}</p>
+        <div class="foot">
+          <span class="dom">{{ i.dom }} ↗</span>
+          {% if user %}
+          <form class="usef" method="post" action="/use/{{ i.id }}">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="back" value="{{ here }}">
+            <button class="use" aria-pressed="{{ 'true' if i.used else 'false' }}">I use this · <span>{{ i.uses_count|thousands }}</span></button>
+          </form>
+          {% else %}
+          <a class="use" href="/login?next={{ (here ~ '#i' ~ i.id)|urlencode }}" title="Log in with your university email to vote">I use this · {{ i.uses_count|thousands }}</a>
+          {% endif %}
+          <details class="more">
+            <summary aria-label="More actions for {{ i.name }}">…</summary>
+            {% if user %}
+              <form method="post" action="/report/{{ i.id }}" class="menu">
+                <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="back" value="{{ here }}">
+                <button name="type" value="dead_link">Report dead link</button>
+                <button name="type" value="wrong_info">Report wrong info</button>
+                <button name="type" value="duplicate">Report duplicate</button>
+              </form>
+            {% else %}
+              <div class="menu"><a href="/login?next={{ here|urlencode }}">Log in to report a problem</a></div>
+            {% endif %}
+          </details>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+  <p class="empty" id="empty"{% if shown %} hidden{% endif %}>Nothing matches{% if q %} “{{ q }}”{% endif %}. Try a broader word.</p>
+</main>
+
+<footer class="wrap">
+  <div class="row">
+    <a class="btn" href="/suggest">Suggest a service</a>
+    {% if updated %}<span>Last update {{ updated|day }}</span>{% endif %}
+    <a href="https://polyuni.ch">Student events: polyuni.ch</a>
+    <a href="/privacy">Privacy</a>
+  </div>
+  University tags mark services for those students; ALL works for any student in that city. Offers change, so confirm on the provider's site.
+</footer>
+{% endblock %}
