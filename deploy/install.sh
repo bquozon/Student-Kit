@@ -34,12 +34,12 @@ chown -R "$SVC_USER:$SVC_USER" "$APP/data"
 
 say "Settings file $ENV_FILE"
 if [[ ! -f "$ENV_FILE" ]]; then
-  grep -v '^DATA_DIR=' "$SRC/.env.example" > "$ENV_FILE"
+  grep -v -e '^DATA_DIR=' -e '^ADMIN_KEY=' "$SRC/.env.example" > "$ENV_FILE"
   chmod 600 "$ENV_FILE"
 fi
 sed -i '/^SITE_URL=/d' "$ENV_FILE" && echo "SITE_URL=https://$DOMAIN" >> "$ENV_FILE"
-# the secret in your mod link https://<domain>/mod/key/<ADMIN_KEY> (made once, kept on updates)
-grep -q '^ADMIN_KEY=.' "$ENV_FILE" || { sed -i '/^ADMIN_KEY=/d' "$ENV_FILE"; echo "ADMIN_KEY=$(head -c 32 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32)" >> "$ENV_FILE"; }
+# the secret in your mod link https://<domain>/mod/key/<ADMIN_KEY> (made once, kept on updates; never the example's)
+{ grep -q '^ADMIN_KEY=.' "$ENV_FILE" && ! grep -q '^ADMIN_KEY=change-me' "$ENV_FILE"; } || { sed -i '/^ADMIN_KEY=/d' "$ENV_FILE"; echo "ADMIN_KEY=$(head -c 32 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32)" >> "$ENV_FILE"; }
 ADMIN_KEY=$(grep -oP '^ADMIN_KEY=\K.*' "$ENV_FILE")
 grep -q '^SMTP_HOST=.' "$ENV_FILE" || echo "  (optional) SMTP_HOST + ADMIN_EMAIL empty: no daily digest email. The site works without it."
 

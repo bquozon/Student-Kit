@@ -22,6 +22,8 @@ SEED_FILE = Path(env("SEED_FILE", "data/seed.json"))
 SITE_URL = env("SITE_URL", "http://localhost:8800").rstrip("/")
 COOKIE_SECURE = SITE_URL.startswith("https://")
 ADMIN_KEY = env("ADMIN_KEY")  # the secret in the mod link /mod/key/<ADMIN_KEY>; empty = mod panel off
+if len(ADMIN_KEY) < 20 or ADMIN_KEY.startswith("change-me"):  # a short or example key would be guessable
+    ADMIN_KEY = ""
 ADMIN_EMAIL = env("ADMIN_EMAIL").lower()  # optional: where the daily digest goes
 
 SMTP_HOST = env("SMTP_HOST")  # empty: the digest is written to DATA_DIR/outbox.txt instead (local dev, tests)
