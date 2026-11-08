@@ -1,0 +1,8 @@
+# Code style, checked in CI:  ruff check . && ruff format --check .
+line-length = 120
+target-version = "py310"
+extend-exclude = [".venv"]
+
+[lint]
+select = ["E", "F", "W", "B"]      # style errors, unused or undefined names, likely bugs
+ignore = ["E741"]                  # short names like "l" are allowed

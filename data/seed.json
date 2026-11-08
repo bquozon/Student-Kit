@@ -1,0 +1,1291 @@
+{
+  "cities": [
+    {
+      "slug": "zurich",
+      "label": "Zürich",
+      "universities": [
+        "ETH",
+        "UZH",
+        "ZHAW"
+      ]
+    },
+    {
+      "slug": "lausanne",
+      "label": "Lausanne",
+      "universities": [
+        "EPFL",
+        "UNIL"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "slug": "study",
+      "short_label": "Study",
+      "label": "Study & courses",
+      "subtitle": "Enrolment, materials, exams and the tools you use every week.",
+      "position": 0,
+      "icon_svg_paths": "<path d=\"M2 5c3-1 6-1 10 1 4-2 7-2 10-1v14c-3-1-6-1-10 1-4-2-7-2-10-1z\"/><path d=\"M12 6v14\"/>"
+    },
+    {
+      "slug": "campus",
+      "short_label": "Campus",
+      "label": "Campus life",
+      "subtitle": "Sport, food, events, associations and support.",
+      "position": 1,
+      "icon_svg_paths": "<path d=\"M12 3l2.4 5.2 5.6.6-4.2 3.8 1.2 5.6L12 15.4l-5 2.8 1.2-5.6L4 8.8l5.6-.6z\"/>"
+    },
+    {
+      "slug": "move",
+      "short_label": "Transport",
+      "label": "Getting around",
+      "subtitle": "Trains, trams, bikes and the passes that make them cheap.",
+      "position": 2,
+      "icon_svg_paths": "<rect x=\"5\" y=\"4\" width=\"14\" height=\"13\" rx=\"3\"/><path d=\"M5 11h14M9 2h6M8 21l2-4M16 21l-2-4\"/><circle cx=\"9\" cy=\"14\" r=\".6\"/><circle cx=\"15\" cy=\"14\" r=\".6\"/>"
+    },
+    {
+      "slug": "home",
+      "short_label": "Housing",
+      "label": "Housing",
+      "subtitle": "Rooms are scarce: apply early and on several sites at once.",
+      "position": 3,
+      "icon_svg_paths": "<path d=\"M3 11l9-8 9 8\"/><path d=\"M5 10v10h5v-6h4v6h5V10\"/>"
+    },
+    {
+      "slug": "money",
+      "short_label": "Money",
+      "label": "Money & admin",
+      "subtitle": "Paying, splitting, insurance and official paperwork.",
+      "position": 4,
+      "icon_svg_paths": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 6.5v11M15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .8-3 2s1.3 1.7 3 2 3 .8 3 2-1.3 2-3 2c-1.4 0-2.5-.5-3-1.5\"/>"
+    },
+    {
+      "slug": "deals",
+      "short_label": "Deals",
+      "label": "Discounts & culture",
+      "subtitle": "What your Legi gets you.",
+      "position": 5,
+      "icon_svg_paths": "<path d=\"M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z\"/><path d=\"M14 7v2M14 11v2M14 15v2\"/>"
+    },
+    {
+      "slug": "work",
+      "short_label": "Jobs",
+      "label": "Jobs & projects",
+      "subtitle": "Student jobs, HiWi positions, theses and internships.",
+      "position": 6,
+      "icon_svg_paths": "<rect x=\"3\" y=\"7\" width=\"18\" height=\"13\" rx=\"2\"/><path d=\"M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18\"/>"
+    },
+    {
+      "slug": "daily",
+      "short_label": "Daily",
+      "label": "Everyday life",
+      "subtitle": "Groceries, second-hand, weather, what's on.",
+      "position": 7,
+      "icon_svg_paths": "<path d=\"M3 10h18l-2 10H5z\"/><path d=\"M8 10l3-6M16 10l-3-6M9 14v3M15 14v3\"/>"
+    }
+  ],
+  "items": [
+    {
+      "category": "study",
+      "name": "myStudies",
+      "url": "https://www.lehrbetrieb.ethz.ch/myStudies",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH"
+      ],
+      "kind": "Web",
+      "description": "Course and exam registration, grades, transcripts, semester fees.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "ETH Moodle",
+      "url": "https://moodle-app2.let.ethz.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH"
+      ],
+      "kind": "Web + app",
+      "description": "Lecture materials, exercise submissions, quizzes. Official app available.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "VVZ course catalogue",
+      "url": "https://www.vvz.ethz.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH"
+      ],
+      "kind": "Web",
+      "description": "Every course: ECTS, times, rooms, exam mode, lecturers.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "ETH Zurich app",
+      "url": "https://ethz.ch/en/campus.html",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH"
+      ],
+      "kind": "App",
+      "description": "Mensa menus, indoor navigation, people search, SOS button.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "VIS Exam Collection",
+      "url": "https://exams.vis.ethz.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH"
+      ],
+      "kind": "Web",
+      "description": "Past exams with community solutions, mostly D-INFK courses.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "ETH Library search",
+      "url": "https://eth.swisscovery.slsp.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH"
+      ],
+      "kind": "Web",
+      "description": "Books, e-journals, papers. Use VPN off campus for full-text access.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "polybox",
+      "url": "https://polybox.ethz.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH"
+      ],
+      "kind": "Web + app",
+      "description": "ETH cloud storage with desktop sync.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "ETH IT Shop",
+      "url": "https://itshop.ethz.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH"
+      ],
+      "kind": "Web",
+      "description": "Free or cheap software: Microsoft 365, MATLAB, Adobe and more.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "ETH Study Rooms",
+      "url": "https://eth-rooms.bquozon.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH"
+      ],
+      "kind": "Web",
+      "description": "Find a free place to study or work on campus right now.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "UZH now",
+      "url": "https://www.app.uzh.ch/en",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "UZH"
+      ],
+      "kind": "App",
+      "description": "Timetable, room finder, events, PrintPlus balance, menus.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "myZHAW",
+      "url": "https://my.zhaw.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ZHAW"
+      ],
+      "kind": "Web",
+      "description": "Timetable, grades and links to every ZHAW learning platform.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "ZHAW Moodle",
+      "url": "https://moodle.zhaw.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ZHAW"
+      ],
+      "kind": "Web + app",
+      "description": "Course materials, videos and quizzes from your lecturers.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "EventoWeb",
+      "url": "https://eventoweb.zhaw.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ZHAW"
+      ],
+      "kind": "Web",
+      "description": "Module registration and study administration.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "ZHAW Library",
+      "url": "https://www.zhaw.ch/de/hochschulbibliothek/einstieg-aktuelles",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ZHAW"
+      ],
+      "kind": "Web",
+      "description": "Books, e-media, study spaces and opening hours in Winterthur, Zurich and Wädenswil.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "bestande",
+      "url": "https://bestande.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH",
+        "UZH"
+      ],
+      "kind": "App",
+      "description": "Combined UZH + ETH timetable and every mensa menu with price filters.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "Language Center",
+      "url": "https://www.sprachenzentrum.uzh.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH",
+        "UZH"
+      ],
+      "kind": "Web",
+      "description": "Free language courses for ETH and UZH students. Book fast.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "GitHub Student Pack",
+      "url": "https://education.github.com/pack",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Copilot, cloud credits, domains and dev tools free with your uni email.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "JetBrains for students",
+      "url": "https://www.jetbrains.com/community/education/",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "All JetBrains IDEs free while you study.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "ASVZ",
+      "url": "https://www.asvz.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web + app",
+      "description": "120+ sports, gyms and courses free for ETH, UZH and ZHAW students. Book lessons in the app.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "Poly+Uni Agenda",
+      "url": "https://polyuni.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH",
+        "UZH"
+      ],
+      "kind": "Web",
+      "description": "Every ETH and UZH student-club event in one calendar.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "Alias",
+      "url": "https://alias-zhaw.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ZHAW"
+      ],
+      "kind": "Web",
+      "description": "ZHAW student union: events, parties and student media.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "VSETH",
+      "url": "https://vseth.ethz.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH"
+      ],
+      "kind": "Web",
+      "description": "ETH student union: associations, helpdesk, legal and housing info.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "VSUZH",
+      "url": "https://www.vsuzh.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "UZH"
+      ],
+      "kind": "Web",
+      "description": "UZH student union: discounts, Tonhalle/opera sales, housing tips.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "Student Project House",
+      "url": "https://sph.ethz.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH"
+      ],
+      "kind": "Web",
+      "description": "Makerspace, workshops and coaching for your own projects.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "Psychological counselling",
+      "url": "https://www.pbs.uzh.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH",
+        "UZH"
+      ],
+      "kind": "Web",
+      "description": "Free, confidential counselling for ETH and UZH students.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "Nightline Zürich",
+      "url": "https://www.nightline.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Anonymous peer listening line, evenings, by phone or chat.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "Polyball",
+      "url": "https://www.polyball.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "ETH's big annual ball. Legi price for students.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "move",
+      "name": "SBB Mobile",
+      "url": "https://www.sbb.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "App",
+      "description": "Timetables, tickets, EasyRide check-in, saver day passes.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "move",
+      "name": "GA Night",
+      "url": "https://www.sbb.ch/de/abos-billette/abonnemente/ga/ga-night.html",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Pass",
+      "description": "Under 25: all of Switzerland from 19:00 to 05:00 (07:00 weekends) for CHF 99/year.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "move",
+      "name": "ZVV",
+      "url": "https://www.zvv.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web + app",
+      "description": "Zurich tram, bus, S-Bahn zones and Netzpass for young people.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "move",
+      "name": "Züri Velo (PubliBike)",
+      "url": "https://www.publibike.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "App",
+      "description": "Station-based bikes and e-bikes all over the city, 24/7.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "move",
+      "name": "Züri rollt",
+      "url": "https://www.zuerirollt.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Free day bike rental (CHF 20 deposit) at HB and other stations.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "move",
+      "name": "Mobility",
+      "url": "https://www.mobility.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "App",
+      "description": "Car sharing for IKEA runs and trips to the mountains.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "move",
+      "name": "E-scooters",
+      "url": "https://www.li.me",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "App",
+      "description": "Lime, Voi and Bolt scooters across the city. Pay per minute.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "home",
+      "name": "WOKO",
+      "url": "https://www.woko.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Student housing cooperative, 4000+ furnished rooms. Main cheap option.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "home",
+      "name": "JUWO",
+      "url": "https://www.juwo.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Youth housing network, rooms for people in education up to 28.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "home",
+      "name": "WGZimmer.ch",
+      "url": "https://www.wgzimmer.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "The classic site for rooms in shared flats (WGs). Check daily.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "home",
+      "name": "Flatfox",
+      "url": "https://flatfox.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web + app",
+      "description": "Flats and WG rooms, many from cooperatives. Good alerts.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "home",
+      "name": "Homegate",
+      "url": "https://www.homegate.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web + app",
+      "description": "Largest flat listing portal in Switzerland.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "home",
+      "name": "students.ch",
+      "url": "https://www.students.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Rooms, sublets and small ads by students.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "money",
+      "name": "TWINT",
+      "url": "https://www.twint.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "App",
+      "description": "Pay friends, shops and parking. Everyone in Switzerland uses it.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "money",
+      "name": "Splitwise",
+      "url": "https://www.splitwise.com",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "App",
+      "description": "Track shared WG costs and trip expenses.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "money",
+      "name": "neon / Yuh",
+      "url": "https://www.neon-free.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "App",
+      "description": "Swiss app banks with free accounts and cards. Revolut works too.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "money",
+      "name": "Priminfo",
+      "url": "https://www.priminfo.admin.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Official health insurance premium comparison by the federal office.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "money",
+      "name": "Comparis",
+      "url": "https://www.comparis.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Compare insurance, phone plans, bank accounts.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "money",
+      "name": "eUmzug",
+      "url": "https://www.eumzug.swiss",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Register a move with the Kreisbüro online, no queue.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "deals",
+      "name": "Opernhaus Club Jung",
+      "url": "https://opernhaus.ch/en/jung/club-jung",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Ages 16–26: last-minute opera and ballet tickets for CHF 18.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "deals",
+      "name": "Tonhalle Zürich",
+      "url": "https://www.tonhalle-orchester.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Student-price tickets, plus special sales through VSUZH.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "deals",
+      "name": "Kunsthaus Zürich",
+      "url": "https://www.kunsthaus.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Reduced Legi entry, CHF 10 on Thursday evenings.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "deals",
+      "name": "Too Good To Go",
+      "url": "https://www.toogoodtogo.com",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "App",
+      "description": "Leftover bakery and restaurant food at a third of the price.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "work",
+      "name": "ETH get hired",
+      "url": "https://www.eth-gethired.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH",
+        "UZH"
+      ],
+      "kind": "Web",
+      "description": "Jobs and internships run by the ETH Career Center and AVETH.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "work",
+      "name": "SiROP",
+      "url": "https://www.sirop.org",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ETH",
+        "UZH"
+      ],
+      "kind": "Web",
+      "description": "Research projects, semester and Master theses at ETH and UZH.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "work",
+      "name": "UZH Career Services",
+      "url": "https://www.careerservices.uzh.ch",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "UZH"
+      ],
+      "kind": "Web",
+      "description": "Job portal, Campus Jobs for hourly work, CV checks.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "work",
+      "name": "ZHAW Career Services",
+      "url": "https://www.zhaw.ch/de/studium/nach-dem-studium/career-services",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ZHAW"
+      ],
+      "kind": "Web",
+      "description": "Career coaching, application checks and job-search resources.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "work",
+      "name": "jobs.ch",
+      "url": "https://www.jobs.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web + app",
+      "description": "General Swiss job board. Filter for part-time and student jobs.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "daily",
+      "name": "Migros / Coop apps",
+      "url": "https://www.migros.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "App",
+      "description": "Weekly deals, digital loyalty cards, scan-and-go.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "daily",
+      "name": "tutti.ch",
+      "url": "https://www.tutti.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web + app",
+      "description": "Free second-hand ads: furniture, bikes, electronics.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "daily",
+      "name": "Ricardo",
+      "url": "https://www.ricardo.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web + app",
+      "description": "Swiss auction site for used items.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "daily",
+      "name": "MeteoSwiss",
+      "url": "https://www.meteoswiss.admin.ch",
+      "cities": [
+        "zurich",
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "App",
+      "description": "Official forecasts and rain radar. Best weather app here.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "daily",
+      "name": "Ron Orp Zürich",
+      "url": "https://www.ronorp.net/zuerich",
+      "cities": [
+        "zurich"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Daily newsletter with city tips, events and a busy marketplace.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "IS-Academia",
+      "url": "https://is-academia.epfl.ch",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "EPFL"
+      ],
+      "kind": "Web",
+      "description": "Course and exam registration, timetable, grades and certificates.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "EPFL Moodle",
+      "url": "https://moodle.epfl.ch",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "EPFL"
+      ],
+      "kind": "Web",
+      "description": "Course documents, exercises and quizzes.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "EPFL Campus",
+      "url": "https://pocketcampus.org/epfl-en",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "EPFL"
+      ],
+      "kind": "App",
+      "description": "Official campus app by PocketCampus: timetable, menus, Moodle, maps.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "EPFL Library",
+      "url": "https://www.epfl.ch/campus/library/",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "EPFL"
+      ],
+      "kind": "Web",
+      "description": "Rolex Learning Center: books, e-journals and study spaces.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "MyUNIL",
+      "url": "https://my.unil.ch",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "UNIL"
+      ],
+      "kind": "Web",
+      "description": "UNIL student portal: timetable, exams, grades and admin.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "study",
+      "name": "UNIL Moodle",
+      "url": "https://moodle.unil.ch",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "UNIL"
+      ],
+      "kind": "Web",
+      "description": "Course materials and assignments for UNIL courses.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "Sports UNIL EPFL",
+      "url": "https://www.epfl.ch/campus/sports/en/",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "EPFL",
+        "UNIL"
+      ],
+      "kind": "Web",
+      "description": "Shared sports center at Dorigny: lake sports, gyms and courses.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "EPFL restaurants",
+      "url": "https://www.epfl.ch/campus/restaurants-shops-hotels/",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "EPFL"
+      ],
+      "kind": "Web",
+      "description": "Menus and opening hours for every campus restaurant and café.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "AGEPoly",
+      "url": "https://agepoly.ch",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "EPFL"
+      ],
+      "kind": "Web",
+      "description": "EPFL student union: events, services and a student transport guide.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "FAE",
+      "url": "https://www.fae-unil.ch",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "UNIL"
+      ],
+      "kind": "Web",
+      "description": "UNIL student federation: representation, events and help.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "EPFL associations",
+      "url": "https://www.epfl.ch/campus/associations/",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "EPFL"
+      ],
+      "kind": "Web",
+      "description": "Directory of student clubs and associations.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "campus",
+      "name": "Balélec",
+      "url": "https://www.balelec.ch",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web",
+      "description": "Big one-night music festival run by EPFL students every spring.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "move",
+      "name": "tl",
+      "url": "https://www.t-l.ch",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Web + app",
+      "description": "Lausanne metro (M1, M2) and buses: timetables and tickets.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "move",
+      "name": "Lausanne youth discount",
+      "url": "https://www.lausanne.ch/portrait/carte-identite/lausanne-et-la-transformation-numerique/realisations/rabais-tl.html",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "Pass",
+      "description": "Lausanne residents up to 24 in training: 50% off the annual Mobilis pass, zones 11–12.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "move",
+      "name": "PubliBike Lausanne",
+      "url": "https://www.publibike.ch",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "ALL"
+      ],
+      "kind": "App",
+      "description": "Station bikes and e-bikes in the Lausanne-Morges network.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "home",
+      "name": "FMEL",
+      "url": "https://accommodation.fmel.ch",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "EPFL",
+        "UNIL"
+      ],
+      "kind": "Web",
+      "description": "Student housing foundation: the main affordable rooms in Lausanne.",
+      "pinned": true,
+      "status": "approved"
+    },
+    {
+      "category": "work",
+      "name": "EPFL Career Center",
+      "url": "https://www.epfl.ch/campus/career-center/",
+      "cities": [
+        "lausanne"
+      ],
+      "universities": [
+        "EPFL"
+      ],
+      "kind": "Web",
+      "description": "Jobs, internships, CV checks and company events.",
+      "pinned": true,
+      "status": "approved"
+    }
+  ],
+  "email_domains": {
+    "ETH": [
+      "ethz.ch",
+      "student.ethz.ch"
+    ],
+    "UZH": [
+      "uzh.ch",
+      "student.uzh.ch"
+    ],
+    "ZHAW": [
+      "zhaw.ch",
+      "students.zhaw.ch"
+    ],
+    "EPFL": [
+      "epfl.ch"
+    ],
+    "UNIL": [
+      "unil.ch"
+    ]
+  }
+}
