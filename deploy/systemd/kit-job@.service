@@ -1,0 +1,7 @@
+[Unit]
+Description=Swiss Student Kit job: %i
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker exec student-kit python -m kit.jobs %i

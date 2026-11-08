@@ -1,0 +1,11 @@
+[Unit]
+Description=Swiss Student Kit: daily email to mods if the queue or reports are non-empty
+
+[Timer]
+OnCalendar=*-*-* 08:00:00
+Persistent=true
+RandomizedDelaySec=300
+Unit=kit-job@digest.service
+
+[Install]
+WantedBy=timers.target

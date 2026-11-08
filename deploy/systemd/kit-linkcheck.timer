@@ -1,0 +1,11 @@
+[Unit]
+Description=Swiss Student Kit: weekly check of every approved link
+
+[Timer]
+OnCalendar=Mon *-*-* 04:00:00
+Persistent=true
+RandomizedDelaySec=300
+Unit=kit-job@linkcheck.service
+
+[Install]
+WantedBy=timers.target

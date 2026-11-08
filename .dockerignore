@@ -1,0 +1,7 @@
+.git
+.venv
+data/*
+!data/seed.json
+tests
+__pycache__
+.env

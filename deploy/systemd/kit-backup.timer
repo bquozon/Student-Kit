@@ -1,0 +1,11 @@
+[Unit]
+Description=Swiss Student Kit: nightly copy of the SQLite file
+
+[Timer]
+OnCalendar=*-*-* 03:15:00
+Persistent=true
+RandomizedDelaySec=300
+Unit=kit-job@backup.service
+
+[Install]
+WantedBy=timers.target

@@ -1,8 +1,8 @@
 """Scheduled jobs, run by systemd timers on the VPS through `docker exec` (deploy/systemd/):
 
-    python -m kit.jobs digest      daily: email the mods if the queue or the reports aren't empty
-    python -m kit.jobs linkcheck   weekly: check every approved URL; 2 failures in a row → a dead_link report
-    python -m kit.jobs backup      nightly: copy the SQLite file to DATA_DIR/backups/ (keeps 14)
+python -m kit.jobs digest      daily: email the mods if the queue or the reports aren't empty
+python -m kit.jobs linkcheck   weekly: check every approved URL; 2 failures in a row → a dead_link report
+python -m kit.jobs backup      nightly: copy the SQLite file to DATA_DIR/backups/ (keeps 14)
 """
 
 from __future__ import annotations
@@ -41,14 +41,15 @@ def linkcheck(con, check=reachable) -> str:
     with db.tx(con):
         for r, ok in zip(items, results, strict=True):
             fails = 0 if ok else r["link_fails"] + 1
-            con.execute(
-                "UPDATE items SET link_fails=?, link_checked_at=datetime('now') WHERE id=?", (fails, r["id"])
-            )
+            con.execute("UPDATE items SET link_fails=?, link_checked_at=datetime('now') WHERE id=?", (fails, r["id"]))
             # never auto-archive: a mod decides. One open automatic report per item is enough.
-            if fails >= FAILS_FOR_REPORT and not con.execute(
-                "SELECT 1 FROM reports WHERE item_id=? AND type='dead_link' AND status='open' AND user_id IS NULL",
-                (r["id"],),
-            ).fetchone():
+            if (
+                fails >= FAILS_FOR_REPORT
+                and not con.execute(
+                    "SELECT 1 FROM reports WHERE item_id=? AND type='dead_link' AND status='open' AND user_id IS NULL",
+                    (r["id"],),
+                ).fetchone()
+            ):
                 con.execute(
                     "INSERT INTO reports (item_id, type, message) VALUES (?, 'dead_link', ?)",
                     (r["id"], f"Automatic check: the link failed {fails} weeks in a row."),

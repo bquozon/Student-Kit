@@ -1,0 +1,20 @@
+# One container on the network of the Caddy container that already holds ports 80/443 (solidtime's, like polyuni.ch).
+# install.sh writes deploy/.env (network, folders, user).
+services:
+  student-kit:
+    build: ${APP_DIR}
+    image: student-kit
+    container_name: student-kit
+    restart: unless-stopped
+    user: "${KIT_UID}:${KIT_GID}"
+    env_file: ${ENV_FILE}
+    environment:
+      - DATA_DIR=/data
+    volumes:
+      - ${APP_DIR}/data:/data
+    networks: [proxy]
+
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK}
