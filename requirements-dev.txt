@@ -1,0 +1,4 @@
+# Only for tests on your computer (not in the Docker image)
+-r kit/requirements.txt
+playwright==1.63.0
+ruff

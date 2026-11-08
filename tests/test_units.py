@@ -52,8 +52,16 @@ class Emails(unittest.TestCase):
     def test_accepts_listed_domains_only(self):
         self.assertEqual(university_for("Anna@Student.ETHZ.ch", self.D), "ETH")
         self.assertEqual(university_for("bob@epfl.ch", self.D), "EPFL")
-        for bad in ("x@gmail.com", "x@sub.ethz.ch", "x@ethz.ch.evil.com", "x@evil-ethz.ch", "@ethz.ch", "a b@ethz.ch",
-                    "x@ethz.ch@gmail.com", "ethz.ch"):
+        for bad in (
+            "x@gmail.com",
+            "x@sub.ethz.ch",
+            "x@ethz.ch.evil.com",
+            "x@evil-ethz.ch",
+            "@ethz.ch",
+            "a b@ethz.ch",
+            "x@ethz.ch@gmail.com",
+            "ethz.ch",
+        ):
             self.assertIsNone(university_for(bad, self.D), bad)
 
 

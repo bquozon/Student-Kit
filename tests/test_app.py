@@ -12,6 +12,7 @@ TMP = tempfile.mkdtemp()
 os.environ.update(DATA_DIR=TMP, ADMIN_EMAIL="mod@student.ethz.ch", SMTP_HOST="", SITE_URL="http://localhost")
 
 from kit import auth, db, jobs, linkcheck, seed, settings  # noqa: E402
+import kit.server  # noqa: E402
 from kit.server import app  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -29,6 +30,7 @@ class AppTest(unittest.TestCase):
         db.init(con)
         seed.seed(con, json.loads((ROOT / "data" / "seed.json").read_text()))
         cls.con = con
+        kit.server.reachable = lambda url, timeout: True  # tests never touch the network
 
     def setUp(self):
         auth.limiter.hits.clear()
@@ -100,23 +102,14 @@ class AppTest(unittest.TestCase):
         self.assertIn(b"https://", r.data)
         r = self.post("/suggest", name="Lausanne only", url="https://a.ch", universities="EPFL", **base)
         self.assertIn(b"Universities must belong", r.data)
-        linkcheck_reachable = linkcheck.reachable
-        try:
-            import kit.server
-
-            kit.server.reachable = lambda url, timeout: True
-            for n in range(settings.MAX_PENDING):
-                self.assertEqual(self.post("/suggest", name=f"Thing {n}", url=f"https://t{n}.ch", **base).status_code, 302)
-            r = self.post("/suggest", name="One too many", url="https://t9.ch", **base)
-            self.assertIn(b"already have 5", r.data)
-        finally:
-            kit.server.reachable = linkcheck_reachable
+        for n in range(settings.MAX_PENDING):
+            r = self.post("/suggest", name=f"Thing {n}", url=f"https://t{n}.ch", **base)
+            self.assertEqual(r.status_code, 302)
+        r = self.post("/suggest", name="One too many", url="https://t9.ch", **base)
+        self.assertIn(b"already have 5", r.data)
         self.assertIn(b"Waiting", self.c.get("/mine").data)
 
     def test_mod_approve_and_reject(self):
-        import kit.server
-
-        kit.server.reachable = lambda url, timeout: True
         self.login("dora@epfl.ch")
         base = {"city": "lausanne", "category": "campus", "kind": "App", "description": "Lake swimming spots map."}
         self.post("/suggest", name="Lake Map", url="https://lakemap.ch", universities="EPFL", **base)
@@ -134,8 +127,15 @@ class AppTest(unittest.TestCase):
         self.assertEqual(r.status_code, 400)  # reason required
         self.post(f"/mod/item/{spam}", action="reject", reason="Not a student service")
         self.post(
-            f"/mod/item/{lake}", action="approve", name="Lake Map", url="https://lakemap.ch", category="campus",
-            kind="App", cities="lausanne", universities="EPFL", description="Lake swimming spots map.",
+            f"/mod/item/{lake}",
+            action="approve",
+            name="Lake Map",
+            url="https://lakemap.ch",
+            category="campus",
+            kind="App",
+            cities="lausanne",
+            universities="EPFL",
+            description="Lake swimming spots map.",
         )
         page = me.get("/lausanne").data
         self.assertIn(b"Lake Map", page)
