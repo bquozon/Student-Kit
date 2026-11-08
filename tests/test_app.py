@@ -1,26 +1,22 @@
-"""App tests with Flask's test client and a throwaway database: login, CSRF, "I use this", suggest limits,
-moderation, reports and the link checker. Run: python -m unittest discover tests"""
+"""App tests with Flask's test client and a throwaway database: no accounts, anonymous votes, the open suggest form,
+the secret mod link, moderation and the link checker. Run: python -m unittest discover tests"""
 
 import json
 import os
-import re
 import tempfile
 import unittest
 from pathlib import Path
 
 TMP = tempfile.mkdtemp()
-os.environ.update(DATA_DIR=TMP, ADMIN_EMAIL="mod@student.ethz.ch", SMTP_HOST="", SITE_URL="http://localhost")
+KEY = "test-admin-key-0123456789"
+os.environ.update(DATA_DIR=TMP, ADMIN_KEY=KEY, ADMIN_EMAIL="", SMTP_HOST="", SITE_URL="http://localhost")
 
-from kit import auth, db, jobs, linkcheck, seed, settings  # noqa: E402
 import kit.server  # noqa: E402
+from kit import auth, db, jobs, linkcheck, seed  # noqa: E402
 from kit.server import app  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-
-
-def outbox_links() -> list[str]:
-    p = Path(TMP) / "outbox.txt"
-    return re.findall(r"/login/verify\?\S+", p.read_text()) if p.exists() else []
+BASE = {"city": "zurich", "category": "daily", "kind": "Web", "description": "A useful thing for students."}
 
 
 class AppTest(unittest.TestCase):
@@ -34,28 +30,34 @@ class AppTest(unittest.TestCase):
 
     def setUp(self):
         auth.limiter.hits.clear()
-        self.c = app.test_client()
-        self.c.get("/zurich")  # sets the csrf cookie
+        self.c = self.client()
 
-    def csrf(self):
-        return self.c.get_cookie("csrf").value
+    @staticmethod
+    def client():
+        c = app.test_client()
+        c.get("/zurich")  # sets the csrf cookie
+        return c
 
-    def post(self, path, **data):
-        return self.c.post(path, data={"csrf": self.csrf(), **data})
+    def post(self, path, c=None, **data):
+        c = c or self.c
+        return c.post(path, data={"csrf": c.get_cookie("csrf").value, **data})
 
-    def login(self, email):
-        r = self.post("/login", email=email, next="/zurich")
-        self.assertIn(b"We sent a login link", r.data)
-        link = outbox_links()[-1]
-        token = re.search(r"t=([^&\s]+)", link).group(1)
-        r = self.post("/login/verify", t=token, next="/zurich")
-        self.assertEqual(r.status_code, 302)
-        return token
+    def vote(self, item_id, c=None):
+        c = c or self.c
+        return c.post(
+            f"/use/{item_id}", data={"csrf": c.get_cookie("csrf").value}, headers={"Accept": "application/json"}
+        )
 
     def item_id(self, name):
         return self.con.execute("SELECT id FROM items WHERE name=?", (name,)).fetchone()[0]
 
-    # ------------------------------------------------------------------ tests
+    def mod(self):
+        m = self.client()
+        r = m.get(f"/mod/key/{KEY}")
+        self.assertEqual(r.location, "/mod?m=mod")
+        return m
+
+    # ------------------------------------------------------------------ public
     def test_public_page_and_redirect(self):
         self.assertIn("/zurich", self.c.get("/").location)
         r = self.c.get("/lausanne")
@@ -64,70 +66,69 @@ class AppTest(unittest.TestCase):
         self.assertIn("/lausanne", self.c.get("/").location)  # remembers the last city
         self.assertEqual(self.c.get("/atlantis").status_code, 404)
         self.assertIn("default-src 'self'", r.headers["Content-Security-Policy"])
+        for gone in ("/login", "/mine", "/login/verify"):
+            self.assertEqual(self.c.get(gone).status_code, 404, gone)
 
     def test_csrf_required(self):
-        r = self.c.post("/login", data={"email": "a@ethz.ch"})
-        self.assertEqual(r.status_code, 400)
+        self.assertEqual(self.c.post("/suggest", data=BASE).status_code, 400)
 
-    def test_login_rejects_other_domains_and_tokens_are_single_use(self):
-        r = self.post("/login", email="someone@gmail.com")
-        self.assertIn(b"university email", r.data)
-        token = self.login("anna@student.ethz.ch")
-        self.assertIn(b"Log out", self.c.get("/zurich").data)
-        other = app.test_client()
-        other.get("/zurich")
-        r = other.post("/login/verify", data={"csrf": other.get_cookie("csrf").value, "t": token})
-        self.assertEqual(r.status_code, 400)  # already used
-
-    def test_login_rate_limit(self):
-        for _ in range(3):
-            self.assertIn(b"We sent", self.post("/login", email="rl@uzh.ch").data)
-        self.assertIn(b"Too many", self.post("/login", email="rl@uzh.ch").data)
-
-    def test_use_toggle_keeps_count(self):
+    def test_anonymous_vote_toggles_once_per_browser(self):
         i = self.item_id("WOKO")
-        r = self.c.post(f"/use/{i}", data={"csrf": self.csrf()}, headers={"Accept": "application/json"})
-        self.assertEqual(r.status_code, 401)
-        self.login("ben@uzh.ch")
-        r = self.c.post(f"/use/{i}", data={"csrf": self.csrf()}, headers={"Accept": "application/json"})
-        self.assertEqual(r.json, {"used": True, "count": 1})
-        r = self.c.post(f"/use/{i}", data={"csrf": self.csrf()}, headers={"Accept": "application/json"})
-        self.assertEqual(r.json, {"used": False, "count": 0})
+        self.assertEqual(self.vote(i).json, {"used": True, "count": 1})
+        other = self.client()
+        self.assertEqual(self.vote(i, other).json, {"used": True, "count": 2})  # another browser
+        self.assertEqual(self.vote(i).json, {"used": False, "count": 1})  # the first one undoes
+        self.assertIn(b'aria-pressed="true"', other.get("/zurich").data)
+        self.assertEqual(self.vote(999999).status_code, 404)
 
-    def test_suggest_validation_and_pending_limit(self):
-        self.login("cleo@zhaw.ch")
-        base = {"city": "zurich", "category": "daily", "kind": "Web", "description": "A useful thing for students."}
-        r = self.post("/suggest", name="X", url="http://insecure.ch", **base)
+    def test_vote_rate_limit_per_ip(self):
+        i = self.item_id("JUWO")
+        for _ in range(60):
+            self.vote(i)
+        self.assertEqual(self.vote(i).status_code, 429)
+
+    def test_open_suggest_form(self):
+        r = self.post("/suggest", name="X", url="http://insecure.ch", **BASE)
         self.assertEqual(r.status_code, 400)
         self.assertIn(b"https://", r.data)
-        r = self.post("/suggest", name="Lausanne only", url="https://a.ch", universities="EPFL", **base)
+        r = self.post("/suggest", name="Lausanne only", url="https://a.ch", universities="EPFL", **BASE)
         self.assertIn(b"Universities must belong", r.data)
-        for n in range(settings.MAX_PENDING):
-            r = self.post("/suggest", name=f"Thing {n}", url=f"https://t{n}.ch", **base)
-            self.assertEqual(r.status_code, 302)
-        r = self.post("/suggest", name="One too many", url="https://t9.ch", **base)
-        self.assertIn(b"already have 5", r.data)
-        self.assertIn(b"Waiting", self.c.get("/mine").data)
+        before = self.con.execute("SELECT count(*) FROM items").fetchone()[0]
+        r = self.post("/suggest", name="Bot", url="https://bot.ch", website="spam", **BASE)  # honeypot
+        self.assertIn("m=sent", r.location)
+        self.assertEqual(self.con.execute("SELECT count(*) FROM items").fetchone()[0], before)
+        for n in range(5):
+            r = self.post("/suggest", name=f"Thing {n}", url=f"https://t{n}.ch", **BASE)
+            self.assertIn("m=sent", r.location)
+        r = self.post("/suggest", name="One too many", url="https://t9.ch", **BASE)
+        self.assertIn(b"wait an hour", r.data)
+
+    # ------------------------------------------------------------------ mod
+    def test_mod_panel_is_hidden_without_the_key(self):
+        self.assertEqual(self.c.get("/mod").status_code, 404)
+        self.assertEqual(self.c.get("/mod/key/wrong").status_code, 404)
+        self.assertEqual(self.c.get("/mod/stats").status_code, 404)
+        self.assertNotIn(b"Moderation", self.c.get("/zurich").data)
+
+    def test_mod_key_guessing_is_rate_limited(self):
+        for _ in range(10):
+            self.c.get("/mod/key/guess")
+        self.assertEqual(self.c.get(f"/mod/key/{KEY}").status_code, 404)  # even the right key, for 15 min
 
     def test_mod_approve_and_reject(self):
-        self.login("dora@epfl.ch")
-        base = {"city": "lausanne", "category": "campus", "kind": "App", "description": "Lake swimming spots map."}
+        base = {**BASE, "city": "lausanne", "category": "campus", "kind": "App"}
         self.post("/suggest", name="Lake Map", url="https://lakemap.ch", universities="EPFL", **base)
         self.post("/suggest", name="Spam", url="https://spam.ch", **base)
         self.assertNotIn(b"Lake Map", self.c.get("/lausanne").data)
-        self.assertEqual(self.c.get("/mod").status_code, 404)  # not a mod
 
-        mod = app.test_client()
-        mod.get("/zurich")
-        self.c, me = mod, self.c
-        self.login("mod@student.ethz.ch")
-        self.assertIn(b"Lake Map", self.c.get("/mod").data)
+        m = self.mod()
+        self.assertIn(b"Lake Map", m.get("/mod").data)
         lake, spam = self.item_id("Lake Map"), self.item_id("Spam")
-        r = self.post(f"/mod/item/{spam}", action="reject", reason="")
-        self.assertEqual(r.status_code, 400)  # reason required
-        self.post(f"/mod/item/{spam}", action="reject", reason="Not a student service")
+        self.assertEqual(self.post(f"/mod/item/{spam}", m, action="reject", reason="").status_code, 400)
+        self.post(f"/mod/item/{spam}", m, action="reject", reason="Not a student service")
         self.post(
             f"/mod/item/{lake}",
+            m,
             action="approve",
             name="Lake Map",
             url="https://lakemap.ch",
@@ -135,32 +136,29 @@ class AppTest(unittest.TestCase):
             kind="App",
             cities="lausanne",
             universities="EPFL",
-            description="Lake swimming spots map.",
+            description="A useful thing for students.",
         )
-        page = me.get("/lausanne").data
+        page = self.c.get("/lausanne").data
         self.assertIn(b"Lake Map", page)
         self.assertIn(b">New<", page)
-        self.assertIn(b"Not a student service", me.get("/mine").data)
-        self.assertIn("Lake Map", (Path(TMP) / "outbox.txt").read_text())
+        self.assertNotIn(b">Spam<", page)
         actions = [r[0] for r in self.con.execute("SELECT action FROM mod_log")]
         self.assertIn("approve", actions)
         self.assertIn("reject", actions)
-        self.assertEqual(self.c.get("/mod/stats?days=7").status_code, 200)
+        self.assertEqual(m.get("/mod/stats?days=7").status_code, 200)
+        self.assertEqual(m.get("/mod/log").status_code, 200)
+        self.post("/mod/logout", m)
+        self.assertEqual(m.get("/mod").status_code, 404)
 
-    def test_report_and_link_check(self):
-        self.login("eli@uzh.ch")
-        i = self.item_id("Ricardo")
-        r = self.post(f"/report/{i}", type="wrong_info", back="/zurich")
-        self.assertIn("m=reported", r.location)
+    def test_link_check_reports_after_two_failures(self):
         dead = self.item_id("Splitwise")
-        for _ in range(2):
+        for _ in range(3):
             jobs.linkcheck(self.con, check=lambda url, t: "splitwise" not in url)
-        rows = self.con.execute("SELECT type, user_id FROM reports WHERE item_id=?", (dead,)).fetchall()
-        self.assertEqual([(r["type"], r["user_id"]) for r in rows], [("dead_link", None)])
-        jobs.linkcheck(self.con, check=lambda url, t: "splitwise" not in url)  # no duplicate report
-        self.assertEqual(self.con.execute("SELECT count(*) FROM reports WHERE item_id=?", (dead,)).fetchone()[0], 1)
+        rows = self.con.execute("SELECT type FROM reports WHERE item_id=?", (dead,)).fetchall()
+        self.assertEqual([r[0] for r in rows], ["dead_link"])  # one report, not one per run
         status = self.con.execute("SELECT status FROM items WHERE id=?", (dead,)).fetchone()[0]
         self.assertEqual(status, "approved")  # never auto-archived
+        self.assertIn(b"Splitwise", self.mod().get("/mod/reports").data)
 
     def test_private_urls_are_never_fetched(self):
         for url in ("http://127.0.0.1/", "http://10.0.0.1/", "http://localhost:8800/", "file:///etc/passwd"):

@@ -12,7 +12,6 @@ import sys
 from pathlib import Path
 
 from . import db, settings
-from .make_mod import make_mod
 
 
 def seed(con, data: dict) -> dict:
@@ -26,11 +25,10 @@ def seed(con, data: dict) -> dict:
             )
             city_id = con.execute("SELECT id FROM cities WHERE slug=?", (c["slug"],)).fetchone()[0]
             for code in c["universities"]:
-                doms = " ".join(data.get("email_domains", {}).get(code, []))
                 con.execute(
-                    "INSERT INTO universities (code, label, city_id, email_domains) VALUES (?, ?, ?, ?)"
-                    " ON CONFLICT(code) DO UPDATE SET city_id=excluded.city_id, email_domains=excluded.email_domains",
-                    (code, code, city_id, doms),
+                    "INSERT INTO universities (code, label, city_id) VALUES (?, ?, ?)"
+                    " ON CONFLICT(code) DO UPDATE SET city_id=excluded.city_id",
+                    (code, code, city_id),
                 )
         for c in data["categories"]:
             con.execute(
@@ -59,8 +57,6 @@ def seed(con, data: dict) -> dict:
             db.save_item(con, row["id"] if row else None, d)
             updated += bool(row)
             added += not row
-    if settings.ADMIN_EMAIL:
-        make_mod(con, settings.ADMIN_EMAIL)
     return {"added": added, "updated": updated}
 
 

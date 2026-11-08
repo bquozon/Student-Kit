@@ -1,10 +1,10 @@
-"""Unit tests: ranking, the New badge, domain normalisation, email-domain validation, safe redirects.
+"""Unit tests: ranking, the New badge, domain normalisation, safe redirects.
 Run: python -m unittest discover tests"""
 
 import unittest
 from datetime import datetime, timezone
 
-from kit.ranking import domain, is_new, pretty_url, rank, safe_next, university_for, valid_https, with_msg
+from kit.ranking import domain, is_new, pretty_url, rank, safe_next, valid_https, with_msg
 
 
 def item(name, pinned=0, uses=0, approved="2026-11-01 10:00:00"):
@@ -44,25 +44,6 @@ class Domains(unittest.TestCase):
         self.assertTrue(valid_https("https://www.asvz.ch"))
         for bad in ("http://asvz.ch", "https://localhost", "javascript:alert(1)", "https://user@asvz.ch", "asvz.ch"):
             self.assertFalse(valid_https(bad), bad)
-
-
-class Emails(unittest.TestCase):
-    D = {"ethz.ch": "ETH", "student.ethz.ch": "ETH", "epfl.ch": "EPFL"}
-
-    def test_accepts_listed_domains_only(self):
-        self.assertEqual(university_for("Anna@Student.ETHZ.ch", self.D), "ETH")
-        self.assertEqual(university_for("bob@epfl.ch", self.D), "EPFL")
-        for bad in (
-            "x@gmail.com",
-            "x@sub.ethz.ch",
-            "x@ethz.ch.evil.com",
-            "x@evil-ethz.ch",
-            "@ethz.ch",
-            "a b@ethz.ch",
-            "x@ethz.ch@gmail.com",
-            "ethz.ch",
-        ):
-            self.assertIsNone(university_for(bad, self.D), bad)
 
 
 class Redirects(unittest.TestCase):

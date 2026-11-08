@@ -21,16 +21,17 @@ DB_PATH = DATA_DIR / "kit.sqlite"
 SEED_FILE = Path(env("SEED_FILE", "data/seed.json"))
 SITE_URL = env("SITE_URL", "http://localhost:8800").rstrip("/")
 COOKIE_SECURE = SITE_URL.startswith("https://")
-ADMIN_EMAIL = env("ADMIN_EMAIL").lower()
+ADMIN_KEY = env("ADMIN_KEY")  # the secret in the mod link /mod/key/<ADMIN_KEY>; empty = mod panel off
+ADMIN_EMAIL = env("ADMIN_EMAIL").lower()  # optional: where the daily digest goes
 
-SMTP_HOST = env("SMTP_HOST")  # empty: mails are written to DATA_DIR/outbox.txt instead (local dev, tests)
+SMTP_HOST = env("SMTP_HOST")  # empty: the digest is written to DATA_DIR/outbox.txt instead (local dev, tests)
 SMTP_PORT = int(env("SMTP_PORT", "587"))
 SMTP_USER = env("SMTP_USER")
 SMTP_PASS = env("SMTP_PASS")
 MAIL_FROM = env("MAIL_FROM", "Swiss Student Kit <noreply@localhost>")
 
-TOKEN_MINUTES = 15
 SESSION_DAYS = 90
-MAX_PENDING = 5
+MAX_PENDING = 100  # whole queue: past this the form says "come back later" (stops a flood from burying real ones)
+SUGGEST_PER_IP = (5, 3600)  # suggestions per IP per hour
 KINDS = ("Web", "App", "Web + app", "Pass")
 REPORT_TYPES = {"dead_link": "Dead link", "wrong_info": "Wrong info", "duplicate": "Duplicate", "other": "Other"}

@@ -1,10 +1,12 @@
-"""/mod: moderation queue, reports, all items, categories, stats, log. Mods only; every action goes to mod_log."""
+"""/mod: moderation queue, reports, all items, categories, stats, log. Owner only; every action goes to mod_log.
+
+No login form: opening /mod/key/<ADMIN_KEY> once unlocks the panel on that device (a 90-day cookie)."""
 
 from __future__ import annotations
 
 from flask import Blueprint, abort, g, redirect, render_template, request, url_for
 
-from . import db, forms, mail, settings, stats
+from . import auth, db, forms, settings, stats
 from .ranking import safe_next, with_msg
 
 bp = Blueprint("mod", __name__, url_prefix="/mod")
@@ -12,44 +14,30 @@ bp = Blueprint("mod", __name__, url_prefix="/mod")
 
 @bp.before_request
 def only_mods():
-    if not g.user:
-        return redirect(url_for("login", next=request.full_path.rstrip("?")))
-    if not g.user["is_mod"]:
+    if not g.is_mod and request.endpoint != "mod.unlock":
+        abort(404)  # the panel doesn't exist for anyone else
+
+
+@bp.get("/key/<key>")
+def unlock(key: str):
+    sid = auth.open_mod_session(g.db, key, auth.client_ip())
+    if not sid:
         abort(404)
+    resp = redirect("/mod?m=mod")  # off the secret URL at once, so it doesn't stay in the address bar
+    auth.set_cookie(resp, auth.MOD_COOKIE, sid, settings.SESSION_DAYS)
+    return resp
+
+
+@bp.post("/logout")
+def logout():
+    auth.close_mod_session(g.db, request.cookies.get(auth.MOD_COOKIE))
+    resp = redirect("/?m=logout")
+    resp.delete_cookie(auth.MOD_COOKIE)
+    return resp
 
 
 def back(default: str) -> str:
     return with_msg(safe_next(request.form.get("back"), default), "saved")
-
-
-def city_link(con, item_id: int) -> str:
-    row = con.execute(
-        "SELECT c.slug FROM item_cities ic JOIN cities c ON c.id=ic.city_id WHERE ic.item_id=? ORDER BY c.position",
-        (item_id,),
-    ).fetchone()
-    return f"{settings.SITE_URL}/{row[0] if row else ''}#i{item_id}"
-
-
-def notify_submitter(con, item_id: int, approved: bool, reason: str = "") -> None:
-    row = con.execute(
-        "SELECT i.name, u.email FROM items i JOIN users u ON u.id=i.submitted_by WHERE i.id=?", (item_id,)
-    ).fetchone()
-    if not row:
-        return  # seeded or mod-created item
-    if approved:
-        mail.try_send(
-            row["email"],
-            f"“{row['name']}” is on Swiss Student Kit",
-            f"Thanks for your suggestion! “{row['name']}” was approved and is now listed:\n\n"
-            f"{city_link(con, item_id)}\n",
-        )
-    else:
-        mail.try_send(
-            row["email"],
-            f"About your suggestion “{row['name']}”",
-            f"Thanks for suggesting “{row['name']}”. A moderator didn't add it this time.\n\nReason: {reason}\n\n"
-            f"Your suggestions: {settings.SITE_URL}/mine\n",
-        )
 
 
 # ------------------------------------------------------------------ queue
@@ -72,7 +60,6 @@ def item_action(item_id: int):
     con = g.db
     item = forms.item_detail(con, item_id) or abort(404)
     action = request.form.get("action", "")
-    me = g.user["id"]
     if action in ("save", "approve"):
         d, errors = forms.clean_item(con, request.form, request.form.getlist("cities"))
         if errors:
@@ -95,9 +82,7 @@ def item_action(item_id: int):
                     "UPDATE items SET status='approved', approved_at=datetime('now'), rejection_reason=NULL WHERE id=?",
                     (item_id,),
                 )
-            db.log(con, me, action, item_id, d["name"])
-        if action == "approve" and item["status"] == "pending":
-            notify_submitter(con, item_id, True)
+            db.log(con, action, item_id, d["name"])
     elif action in ("reject", "merge"):
         if action == "merge":
             target = con.execute(
@@ -109,15 +94,14 @@ def item_action(item_id: int):
         else:
             reason = " ".join(request.form.get("reason", "").split())[:300]
             if not reason:
-                abort(400, "A reason is required to reject (the submitter gets it by email).")
+                abort(400, "A reason is required to reject (it's kept in the log).")
         with db.tx(con):
             con.execute("UPDATE items SET status='rejected', rejection_reason=? WHERE id=?", (reason, item_id))
-            db.log(con, me, action, item_id, f"{item['name']}: {reason}")
-        notify_submitter(con, item_id, False, reason)
+            db.log(con, action, item_id, f"{item['name']}: {reason}")
     elif action in ("pin", "unpin"):
         with db.tx(con):
             con.execute("UPDATE items SET pinned=? WHERE id=?", (int(action == "pin"), item_id))
-            db.log(con, me, action, item_id, item["name"])
+            db.log(con, action, item_id, item["name"])
     elif action in ("archive", "restore"):
         with db.tx(con):
             con.execute(
@@ -125,7 +109,7 @@ def item_action(item_id: int):
             )
             if action == "archive":  # an archived item needs no more fixing
                 con.execute("UPDATE reports SET status='done' WHERE item_id=? AND status='open'", (item_id,))
-            db.log(con, me, action, item_id, item["name"])
+            db.log(con, action, item_id, item["name"])
     else:
         abort(400)
     return redirect(back(url_for("mod.queue")))
@@ -136,8 +120,7 @@ def item_action(item_id: int):
 def reports():
     con = g.db
     rows = con.execute(
-        "SELECT r.*, i.name, i.url, i.status item_status, i.link_fails, u.email FROM reports r"
-        " JOIN items i ON i.id=r.item_id LEFT JOIN users u ON u.id=r.user_id"
+        "SELECT r.*, i.name, i.url, i.status item_status, i.link_fails FROM reports r JOIN items i ON i.id=r.item_id"
         " WHERE r.status='open' ORDER BY r.item_id, r.created_at"
     ).fetchall()
     groups: dict[int, dict] = {}
@@ -150,7 +133,7 @@ def reports():
 def reports_done(item_id: int):
     with db.tx(g.db):
         n = g.db.execute("UPDATE reports SET status='done' WHERE item_id=? AND status='open'", (item_id,)).rowcount
-        db.log(g.db, g.user["id"], "reports done", item_id, f"{n} report(s)")
+        db.log(g.db, "reports done", item_id, f"{n} report(s)")
     return redirect(back(url_for("mod.reports")))
 
 
@@ -205,7 +188,7 @@ def move_category(cat_id: int):
         if 0 <= j < len(ids):
             ids[i], ids[j] = ids[j], ids[i]
             con.executemany("UPDATE categories SET position=? WHERE id=?", list(enumerate(ids)))
-            db.log(con, g.user["id"], "move category", None, f"{cat_id} {request.form.get('dir')}")
+            db.log(con, "move category", None, f"{cat_id} {request.form.get('dir')}")
     return redirect(url_for("mod.categories"))
 
 
@@ -222,18 +205,20 @@ def stats_page():
         return con.execute(sql, a).fetchone()[0]
 
     numbers = {
-        "users": one("SELECT count(*) FROM users"),
-        "new_users": one("SELECT count(*) FROM users WHERE created_at >= ?", since),
+        "voters": one("SELECT count(DISTINCT voter) FROM uses"),
+        "new_voters": one("SELECT count(DISTINCT voter) FROM uses WHERE created_at >= ?", since),
         "uses": one("SELECT count(*) FROM uses"),
         "new_uses": one("SELECT count(*) FROM uses WHERE created_at >= ?", since),
-        "suggested": one("SELECT count(*) FROM items WHERE submitted_by IS NOT NULL AND created_at >= ?", since),
+        "suggested": one("SELECT count(*) FROM items WHERE submitted=1 AND created_at >= ?", since),
         "pending": one("SELECT count(*) FROM items WHERE status='pending'"),
         "reports": one("SELECT count(*) FROM reports WHERE status='open'"),
         "approved": one("SELECT count(*) FROM items WHERE status='approved'"),
     }
     tables = {
-        "Students by university": con.execute(
-            "SELECT ifnull(university_code, '?'), count(*) n FROM users GROUP BY 1 ORDER BY n DESC"
+        "Votes in this period": con.execute(
+            "SELECT i.name, count(*) n FROM uses u JOIN items i ON i.id=u.item_id WHERE u.created_at >= ?"
+            " GROUP BY i.id ORDER BY n DESC, i.name LIMIT 15",
+            (since,),
         ).fetchall(),
         "Most used services (all time)": con.execute(
             "SELECT name, uses_count FROM items WHERE status='approved' AND uses_count > 0"
@@ -257,7 +242,6 @@ def stats_page():
 @bp.get("/log")
 def log():
     rows = g.db.execute(
-        "SELECT l.*, u.email, i.name FROM mod_log l LEFT JOIN users u ON u.id=l.user_id"
-        " LEFT JOIN items i ON i.id=l.item_id ORDER BY l.id DESC LIMIT 300"
+        "SELECT l.*, i.name FROM mod_log l LEFT JOIN items i ON i.id=l.item_id ORDER BY l.id DESC LIMIT 300"
     ).fetchall()
     return render_template("mod/log.html", tab="log", rows=rows)

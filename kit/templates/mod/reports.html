@@ -5,7 +5,7 @@
 <div class="box">
   <h3><a href="{{ g.item.url }}" target="_blank" rel="noopener">{{ g.item.name }} ↗</a> <span class="status {{ g.item.item_status }}">{{ g.item.item_status }}</span></h3>
   <ul>
-    {% for r in g.reports %}<li>{{ types[r.type] }}{% if r.message %}: “{{ r.message }}”{% endif %} · {{ r.email or "automatic link check" }} · {{ r.created_at|day }}</li>{% endfor %}
+    {% for r in g.reports %}<li>{{ types[r.type] }}{% if r.message %}: “{{ r.message }}”{% endif %} · {{ r.created_at|day }}</li>{% endfor %}
   </ul>
   <div class="actions">
     <a class="btn ghost small" href="/mod/items/{{ g.item.item_id }}">Edit item</a>

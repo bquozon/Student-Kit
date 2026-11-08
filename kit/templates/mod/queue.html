@@ -6,7 +6,7 @@
 <form class="box" method="post" action="/mod/item/{{ item.id }}" id="q{{ item.id }}">
   <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="back" value="/mod">
   <h3>{{ item.name }} <a class="hint" href="{{ item.url }}" target="_blank" rel="noopener">open ↗</a></h3>
-  <p>From {{ item.submitter or "?" }} · {{ item.created_at|day }}{% if item.note %} · Note: “{{ item.note }}”{% endif %}</p>
+  <p>Sent {{ item.created_at|day }}{% if item.note %} · Note: “{{ item.note }}”{% endif %}</p>
   {{ fields(item, cities, categories, kinds) }}
   <div class="actions">
     <button class="btn" name="action" value="approve">Approve</button>
@@ -14,7 +14,7 @@
   </div>
   <div class="two">
     <div>
-      <label for="r{{ item.id }}">Reject: reason <span class="hint">(emailed to the submitter)</span></label>
+      <label for="r{{ item.id }}">Reject: reason <span class="hint">(for the log)</span></label>
       <input id="r{{ item.id }}" name="reason" type="text" maxlength="300">
       <div class="actions"><button class="btn bad small" name="action" value="reject">Reject</button></div>
     </div>

@@ -3,10 +3,11 @@
 {% block body %}
 <main class="wrap page">
   <h1>Suggest a service</h1>
-  <p>An app or website that makes student life easier? A moderator checks every suggestion. You have {{ pending }} of {{ max }} waiting.</p>
+  <p>An app or website that makes student life easier? No account needed: a moderator checks every suggestion before it goes live.</p>
   {% if errors %}<ul class="errors" role="alert">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
   <form method="post" action="/suggest" id="suggest">
     <input type="hidden" name="csrf" value="{{ csrf }}">
+    <div hidden><label for="website">Leave this empty</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
     <label for="name">Name</label>
     <input id="name" name="name" type="text" required minlength="2" maxlength="80" value="{{ f.name }}">
     <label for="url">URL <span class="hint">(https only)</span></label>
@@ -46,7 +47,7 @@
     <textarea id="description" name="description" required minlength="10" maxlength="140" placeholder="What it does, in one sentence.">{{ f.description }}</textarea>
     <label for="note">Note to the moderator <span class="hint">(optional, not public)</span></label>
     <textarea id="note" name="note" maxlength="500">{{ f.note }}</textarea>
-    <div class="actions"><button class="btn">Send suggestion</button><a href="/mine">My suggestions</a></div>
+    <div class="actions"><button class="btn">Send suggestion</button></div>
   </form>
 </main>
 {% endblock %}

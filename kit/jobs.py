@@ -1,6 +1,6 @@
 """Scheduled jobs, run by systemd timers on the VPS through `docker exec` (deploy/systemd/):
 
-python -m kit.jobs digest      daily: email the mods if the queue or the reports aren't empty
+python -m kit.jobs digest      daily: email ADMIN_EMAIL if the queue or the reports aren't empty
 python -m kit.jobs linkcheck   weekly: check every approved URL; 2 failures in a row → a dead_link report
 python -m kit.jobs backup      nightly: copy the SQLite file to DATA_DIR/backups/ (keeps 14)
 """
@@ -21,16 +21,15 @@ KEEP_BACKUPS = 14
 def digest(con) -> str:
     pending = con.execute("SELECT count(*) FROM items WHERE status='pending'").fetchone()[0]
     reports = con.execute("SELECT count(DISTINCT item_id) FROM reports WHERE status='open'").fetchone()[0]
-    mods = [r[0] for r in con.execute("SELECT email FROM users WHERE is_mod=1")]
-    if not (pending or reports) or not mods:
+    if not (pending or reports) or not settings.ADMIN_EMAIL:
         return f"nothing to send ({pending} pending, {reports} reported)"
     mail.send(
-        mods,
+        settings.ADMIN_EMAIL,
         f"Swiss Student Kit: {pending} to review, {reports} reported",
         f"{pending} suggestion(s) waiting: {settings.SITE_URL}/mod\n"
         f"{reports} item(s) with open reports: {settings.SITE_URL}/mod/reports\n",
     )
-    return f"sent to {len(mods)} mod(s)"
+    return f"sent to {settings.ADMIN_EMAIL}"
 
 
 def linkcheck(con, check=reachable) -> str:
@@ -46,7 +45,7 @@ def linkcheck(con, check=reachable) -> str:
             if (
                 fails >= FAILS_FOR_REPORT
                 and not con.execute(
-                    "SELECT 1 FROM reports WHERE item_id=? AND type='dead_link' AND status='open' AND user_id IS NULL",
+                    "SELECT 1 FROM reports WHERE item_id=? AND type='dead_link' AND status='open'",
                     (r["id"],),
                 ).fetchone()
             ):

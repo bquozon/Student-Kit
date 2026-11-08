@@ -9,8 +9,7 @@ CREATE TABLE IF NOT EXISTS cities (
 CREATE TABLE IF NOT EXISTS universities (
   code TEXT PRIMARY KEY,
   label TEXT NOT NULL,
-  city_id INTEGER NOT NULL REFERENCES cities(id),
-  email_domains TEXT NOT NULL DEFAULT ''          -- space-separated, e.g. "ethz.ch student.ethz.ch"
+  city_id INTEGER NOT NULL REFERENCES cities(id)
 );
 
 CREATE TABLE IF NOT EXISTS categories (
@@ -23,14 +22,6 @@ CREATE TABLE IF NOT EXISTS categories (
   position INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
-  university_code TEXT REFERENCES universities(code),
-  is_mod INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
 CREATE TABLE IF NOT EXISTS items (
   id INTEGER PRIMARY KEY,
   category_id INTEGER NOT NULL REFERENCES categories(id),
@@ -40,11 +31,11 @@ CREATE TABLE IF NOT EXISTS items (
   kind TEXT NOT NULL CHECK (kind IN ('Web', 'App', 'Web + app', 'Pass')),
   pinned INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'archived')),
-  submitted_by INTEGER REFERENCES users(id),
+  submitted INTEGER NOT NULL DEFAULT 0,           -- 1 = came through the public suggest form
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   approved_at TEXT,
   rejection_reason TEXT,
-  note TEXT,                                       -- the submitter's note to the mods
+  note TEXT,                                       -- the submitter's note to the mod
   uses_count INTEGER NOT NULL DEFAULT 0,           -- cache of COUNT(uses), kept by the triggers below
   link_fails INTEGER NOT NULL DEFAULT 0,           -- consecutive failed link checks
   link_checked_at TEXT
@@ -64,11 +55,12 @@ CREATE TABLE IF NOT EXISTS item_universities (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS item_universities_u ON item_universities(item_id, ifnull(university_code, ''));
 
+-- the anonymous "I use this" vote: voter = SHA-256 of a random id kept in the visitor's cookie (no account)
 CREATE TABLE IF NOT EXISTS uses (
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  voter TEXT NOT NULL,
   item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  PRIMARY KEY (user_id, item_id)
+  PRIMARY KEY (voter, item_id)
 );
 CREATE TRIGGER IF NOT EXISTS uses_add AFTER INSERT ON uses
   BEGIN UPDATE items SET uses_count = uses_count + 1 WHERE id = NEW.item_id; END;
@@ -78,29 +70,20 @@ CREATE TRIGGER IF NOT EXISTS uses_del AFTER DELETE ON uses
 CREATE TABLE IF NOT EXISTS reports (
   id INTEGER PRIMARY KEY,
   item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
-  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,   -- NULL = the automatic link checker
   type TEXT NOT NULL CHECK (type IN ('dead_link', 'wrong_info', 'duplicate', 'other')),
   message TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'done')),
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE TABLE IF NOT EXISTS login_tokens (
-  token_hash TEXT PRIMARY KEY,
-  email TEXT NOT NULL,
-  expires_at TEXT NOT NULL,
-  used_at TEXT
-);
-
+-- the mod's devices (opened the secret /mod/key/<ADMIN_KEY> link); id = SHA-256 of the cookie value
 CREATE TABLE IF NOT EXISTS sessions (
-  id TEXT PRIMARY KEY,                             -- SHA-256 of the cookie value
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  id TEXT PRIMARY KEY,
   expires_at TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS mod_log (
   id INTEGER PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id),
   action TEXT NOT NULL,
   item_id INTEGER,
   detail TEXT NOT NULL DEFAULT '',

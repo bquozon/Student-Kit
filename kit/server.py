@@ -2,9 +2,10 @@
 
     python -m kit.server --host 127.0.0.1 --port 8800
 
-Public:  /  /<city>  /login  /login/verify  /logout  /suggest  /suggest/check  /mine  /privacy
-         POST /use/<id>  /report/<id>  /hit (anonymous stats)  GET /health
-Mods:    /mod …  (see mod.py)
+No accounts: anyone browses, votes ("I use this", one per browser) and suggests links; only the owner moderates.
+
+Public:  /  /<city>  /suggest  /suggest/check  /privacy  POST /use/<id>  /hit (anonymous stats)  GET /health
+Mod:     /mod …  (see mod.py; unlocked on a device by opening /mod/key/<ADMIN_KEY> once)
 """
 
 from __future__ import annotations
@@ -20,8 +21,9 @@ from pathlib import Path
 from flask import Flask, abort, g, jsonify, make_response, redirect, render_template, request, url_for
 
 from . import auth, db, forms, settings, stats
+from .auth import client_ip, set_cookie
 from .linkcheck import reachable
-from .ranking import domain, is_new, pretty_url, rank, safe_next, with_msg
+from .ranking import domain, is_new, pretty_url, rank, safe_next
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
@@ -32,9 +34,8 @@ VERSION = hashlib.sha256(b"".join(p.read_bytes() for p in sorted(_static.glob("*
 FLASH = {
     "sent": "Thanks! A moderator will check it within a few days.",
     "sent_warn": "Thanks! A moderator will check it within a few days. Note: we couldn't reach that URL just now.",
-    "reported": "Thanks for the report, a moderator will have a look.",
-    "login": "You're logged in.",
-    "logout": "You're logged out.",
+    "mod": "Moderation unlocked on this device.",
+    "logout": "Moderation locked on this device.",
     "saved": "Saved.",
 }
 CSP = (
@@ -44,17 +45,8 @@ CSP = (
 )
 
 
-def client_ip() -> str:
-    # our only way in is the Caddy proxy, which sets X-Real-IP (deploy/install.sh); never trust X-Forwarded-For's left
-    return request.headers.get("X-Real-IP") or request.remote_addr or "?"
-
-
 def wants_json() -> bool:
     return "application/json" in request.headers.get("Accept", "")
-
-
-def set_cookie(resp, name: str, value: str, days: int) -> None:
-    resp.set_cookie(name, value, max_age=days * 86400, httponly=True, secure=settings.COOKIE_SECURE, samesite="Lax")
 
 
 # ------------------------------------------------------------------ request lifecycle
@@ -64,7 +56,7 @@ def before():
     if request.endpoint == "static":
         return
     g.db = db.connect()
-    g.user = auth.current_user(g.db, request.cookies.get(auth.COOKIE))
+    g.is_mod = auth.is_mod(g.db, request.cookies.get(auth.MOD_COOKIE))
     g.csrf = request.cookies.get("csrf")
     if not g.csrf:
         g.csrf, g.new_csrf = secrets.token_urlsafe(24), True
@@ -93,7 +85,7 @@ def headers(resp):
     if settings.COOKIE_SECURE:
         resp.headers["Strict-Transport-Security"] = "max-age=31536000"
     if request.endpoint != "static":
-        resp.headers.setdefault("Cache-Control", "no-store" if g.get("user") else "no-cache")
+        resp.headers.setdefault("Cache-Control", "no-store" if g.get("is_mod") else "no-cache")
     return resp
 
 
@@ -107,7 +99,7 @@ def error(e):
 @app.context_processor
 def context():
     return {
-        "user": g.get("user"),
+        "is_mod": g.get("is_mod"),
         "csrf": g.get("csrf", ""),
         "flash": FLASH.get(request.args.get("m", "")),
         "asset": lambda p: url_for("static", filename=p, v=VERSION),
@@ -125,25 +117,12 @@ def day(ts: str | None) -> str:
     return datetime.fromisoformat(ts).strftime("%-d %b %Y") if ts else ""
 
 
-def require_login():
-    if not g.user:
-        if wants_json():
-            abort(make_response(jsonify(error="login"), 401))
-        abort(redirect(url_for("login", next=request.full_path.rstrip("?"))))
-
-
 # ------------------------------------------------------------------ public page
 @app.get("/")
 def home():
     con = g.db
     slugs = [r[0] for r in con.execute("SELECT slug FROM cities ORDER BY position")]
     slug = request.cookies.get("city")
-    if slug not in slugs and g.user and g.user["university_code"]:
-        row = con.execute(
-            "SELECT c.slug FROM universities u JOIN cities c ON c.id=u.city_id WHERE u.code=?",
-            (g.user["university_code"],),
-        ).fetchone()
-        slug = row[0] if row else None
     if slug not in slugs:
         slug = slugs[0] if slugs else abort(404)
     qs = request.query_string.decode()
@@ -179,7 +158,8 @@ def city(slug: str):
     u = request.args.get("u", "").upper()
     u = u if u in unis else ""
     q = request.args.get("q", "").strip()[:80]
-    used = {r[0] for r in con.execute("SELECT item_id FROM uses WHERE user_id=?", (g.user["id"],))} if g.user else set()
+    voter = request.cookies.get(auth.VOTER_COOKIE)
+    used = {r[0] for r in con.execute("SELECT item_id FROM uses WHERE voter=?", (auth.sha(voter),))} if voter else set()
     items = city_items(con, c["id"])
     sections, shown = [], 0
     for cat in con.execute("SELECT * FROM categories ORDER BY position"):
@@ -223,44 +203,25 @@ def city(slug: str):
 
 @app.post("/use/<int:item_id>")
 def use(item_id: int):
-    require_login()
+    """The anonymous vote: toggles for this browser (voter cookie, created on the first vote).
+    shortcut: clearing cookies allows voting again; the per-IP limit caps that. Add accounts if votes get gamed."""
     con = g.db
     if not con.execute("SELECT 1 FROM items WHERE id=? AND status='approved'", (item_id,)).fetchone():
         abort(404)
-    if not auth.limiter.allow(f"use:{g.user['id']}", 120, 3600):
-        abort(make_response(jsonify(error="slow down"), 429))
+    if not auth.limiter.allow("use:" + client_ip(), 60, 3600):
+        abort(make_response(jsonify(error="Too many votes from your network, try again later."), 429))
+    voter = request.cookies.get(auth.VOTER_COOKIE) or secrets.token_urlsafe(24)
     with db.tx(con):
-        cur = con.execute("DELETE FROM uses WHERE user_id=? AND item_id=?", (g.user["id"], item_id))
+        cur = con.execute("DELETE FROM uses WHERE voter=? AND item_id=?", (auth.sha(voter), item_id))
         if not cur.rowcount:
-            con.execute("INSERT INTO uses (user_id, item_id) VALUES (?, ?)", (g.user["id"], item_id))
+            con.execute("INSERT INTO uses (voter, item_id) VALUES (?, ?)", (auth.sha(voter), item_id))
             stats.bump(con, "action", "Marked “I use this”")
     used = not cur.rowcount
     count = con.execute("SELECT uses_count FROM items WHERE id=?", (item_id,)).fetchone()[0]
-    if wants_json():
-        return jsonify(used=used, count=count)
-    return redirect(safe_next(request.form.get("back")) + f"#i{item_id}")
-
-
-@app.post("/report/<int:item_id>")
-def report(item_id: int):
-    require_login()
-    con = g.db
-    kind = request.form.get("type", "")
-    if kind not in settings.REPORT_TYPES or not con.execute("SELECT 1 FROM items WHERE id=?", (item_id,)).fetchone():
-        abort(400)
-    if (
-        auth.limiter.allow(f"report:{g.user['id']}", 20, 3600)
-        and not con.execute(
-            "SELECT 1 FROM reports WHERE item_id=? AND user_id=? AND type=? AND status='open'",
-            (item_id, g.user["id"], kind),
-        ).fetchone()
-    ):
-        con.execute(
-            "INSERT INTO reports (item_id, user_id, type, message) VALUES (?, ?, ?, ?)",
-            (item_id, g.user["id"], kind, request.form.get("message", "").strip()[:500]),
-        )
-        stats.bump(con, "action", "Reported a service")
-    return redirect(with_msg(safe_next(request.form.get("back")), "reported"))
+    back = safe_next(request.form.get("back")) + f"#i{item_id}"
+    resp = jsonify(used=used, count=count) if wants_json() else redirect(back)
+    set_cookie(resp, auth.VOTER_COOKIE, voter, 365 * 2)
+    return resp
 
 
 @app.post("/hit")
@@ -280,91 +241,46 @@ def hit():
     return "", 204
 
 
-# ------------------------------------------------------------------ login
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    nxt = safe_next(request.values.get("next"))
-    domains = sorted(db.email_domains(g.db))
-    if request.method == "POST":
-        email = request.form.get("email", "")
-        err = auth.start_login(g.db, email, client_ip(), nxt)
-        return render_template("login.html", sent=not err, error=err, email=email, next=nxt, domains=domains)
-    return render_template("login.html", next=nxt, domains=domains)
-
-
-@app.route("/login/verify", methods=["GET", "POST"])
-def verify():
-    token, nxt = request.values.get("t", ""), safe_next(request.values.get("next"))
-    if request.method == "GET":  # a button, so mail scanners that open links don't use up the token
-        return render_template("verify.html", t=token, next=nxt)
-    sid = auth.finish_login(g.db, token)
-    if not sid:
-        return render_template("verify.html", expired=True), 400
-    stats.bump(g.db, "action", "Logged in")
-    resp = redirect(with_msg(nxt, "login"))
-    set_cookie(resp, auth.COOKIE, sid, settings.SESSION_DAYS)
-    return resp
-
-
-@app.post("/logout")
-def logout():
-    auth.logout(g.db, request.cookies.get(auth.COOKIE))
-    resp = redirect("/?m=logout")
-    resp.delete_cookie(auth.COOKIE)
-    return resp
-
-
 # ------------------------------------------------------------------ suggesting
 @app.route("/suggest", methods=["GET", "POST"])
 def suggest():
-    require_login()
+    """Open to anyone, no account: a honeypot field, a per-IP limit and a cap on the whole queue keep spam out."""
     con = g.db
     opts = forms.form_options(con)
-    pending = con.execute(
-        "SELECT count(*) FROM items WHERE submitted_by=? AND status='pending'", (g.user["id"],)
-    ).fetchone()[0]
     if request.method == "GET":
-        return render_template("suggest.html", f={}, errors=[], pending=pending, max=settings.MAX_PENDING, **opts)
+        return render_template("suggest.html", f={}, errors=[], **opts)
+    if request.form.get("website"):  # hidden field only bots fill in: pretend it worked
+        return redirect(url_for("suggest", m="sent"))
     city = request.form.get("city", "")
     slugs = [c["slug"] for c in opts["cities"]] if city == "all" else [city]
     d, errors = forms.clean_item(con, request.form, slugs)
+    pending = con.execute("SELECT count(*) FROM items WHERE status='pending'").fetchone()[0]
     if pending >= settings.MAX_PENDING:
-        errors.append(f"You already have {pending} suggestions waiting. Please wait until a moderator checks them.")
+        errors.append("The moderation queue is full right now. Please come back in a few days.")
+    if not errors and not auth.limiter.allow("suggest:" + client_ip(), *settings.SUGGEST_PER_IP):
+        errors.append("Thanks, that's a lot of suggestions! Please wait an hour before sending more.")
     if errors:
-        return render_template(
-            "suggest.html", f=request.form, errors=errors, pending=pending, max=settings.MAX_PENDING, **opts
-        ), 400
+        return render_template("suggest.html", f=request.form, errors=errors, **opts), 400
     with db.tx(con):
-        db.save_item(con, None, {**d, "status": "pending", "submitted_by": g.user["id"]})
+        db.save_item(con, None, {**d, "status": "pending", "submitted": 1})
         stats.bump(con, "action", "Suggested a service")
-    return redirect(url_for("mine", m="sent" if reachable(d["url"], 5) else "sent_warn"))
+    return redirect(url_for("suggest", m="sent" if reachable(d["url"], 5) else "sent_warn"))
 
 
 @app.get("/suggest/check")
 def suggest_check():
     """For the form's JS: existing items on the same domain, and whether the URL answers."""
-    require_login()
     url = request.args.get("url", "").strip()
     dom = domain(url)
     dupes = [
         {"name": r["name"], "url": r["url"], "status": r["status"]}
-        for r in g.db.execute("SELECT name, url, status FROM items WHERE status != 'rejected'")
+        for r in g.db.execute("SELECT name, url, status FROM items WHERE status IN ('approved', 'pending')")
         if dom and domain(r["url"]) == dom
     ]
     ok = None
-    if url.startswith("https://") and auth.limiter.allow(f"check:{g.user['id']}", 30, 3600):
+    if url.startswith("https://") and auth.limiter.allow("check:" + client_ip(), 30, 3600):
         ok = reachable(url, 5)
     return jsonify(dupes=dupes, reachable=ok)
-
-
-@app.get("/mine")
-def mine():
-    require_login()
-    rows = g.db.execute(
-        "SELECT name, url, status, rejection_reason, created_at FROM items WHERE submitted_by=? ORDER BY id DESC",
-        (g.user["id"],),
-    ).fetchall()
-    return render_template("mine.html", rows=rows)
 
 
 @app.get("/privacy")

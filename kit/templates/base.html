@@ -15,15 +15,12 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="me" aria-label="Account">
+  <nav class="me" aria-label="Site">
     <a href="/">Home</a>
-    {% if user %}
-      <a href="/suggest">Suggest a service</a>
-      <a href="/mine">My suggestions</a>
-      {% if user.is_mod %}<a href="/mod">Moderation</a>{% endif %}
-      <form method="post" action="/logout"><input type="hidden" name="csrf" value="{{ csrf }}"><button title="{{ user.email }}">Log out</button></form>
-    {% else %}
-      <a href="/login?next={{ request.full_path.rstrip('?')|urlencode }}">Log in</a>
+    <a href="/suggest">Suggest a service</a>
+    {% if is_mod %}
+      <a href="/mod">Moderation</a>
+      <form method="post" action="/mod/logout"><input type="hidden" name="csrf" value="{{ csrf }}"><button>Lock</button></form>
     {% endif %}
   </nav>
   {% if flash %}<p class="flash" role="status">{{ flash }}</p>{% endif %}

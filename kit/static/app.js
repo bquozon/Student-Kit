@@ -52,10 +52,6 @@
       const a = e.target.closest("a.name[data-id]");
       if (a) hit({ t: "click", id: a.dataset.id });
     });
-    // close an open "…" menu when clicking elsewhere
-    document.addEventListener("click", (e) => {
-      for (const d of $$("details.more[open]")) if (!d.contains(e.target)) d.open = false;
-    });
   }
 
   // ---------------------------------------------------------------- "I use this" without a page reload
@@ -67,7 +63,7 @@
     b.disabled = true;
     try {
       const r = await fetch(f.action, { method: "POST", body: new FormData(f), headers: { Accept: "application/json" } });
-      if (r.status === 401) return void (location.href = "/login?next=" + encodeURIComponent(location.pathname));
+      if (r.status === 429) return void alert((await r.json()).error);
       if (!r.ok) throw new Error(r.status);
       const d = await r.json();
       b.setAttribute("aria-pressed", String(d.used));

@@ -61,8 +61,7 @@ def clean_item(con, form, city_slugs: list[str]) -> tuple[dict, list[str]]:
 def item_detail(con, item_id: int):
     """One item with its city slugs and university codes ([] = ALL), for the edit forms."""
     row = con.execute(
-        "SELECT i.*, c.slug category, u.email submitter FROM items i JOIN categories c ON c.id=i.category_id"
-        " LEFT JOIN users u ON u.id=i.submitted_by WHERE i.id=?",
+        "SELECT i.*, c.slug category FROM items i JOIN categories c ON c.id=i.category_id WHERE i.id=?",
         (item_id,),
     ).fetchone()
     if not row:

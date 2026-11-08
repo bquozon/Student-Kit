@@ -13,8 +13,8 @@
 <div class="kpis">
   <div class="kpi"><b>{{ s.visitors|thousands }}</b><span>visitors</span></div>
   <div class="kpi"><b>{{ s.views|thousands }}</b><span>page views</span></div>
-  <div class="kpi"><b>{{ n.new_users|thousands }}</b><span>new students ({{ n.users|thousands }} total)</span></div>
-  <div class="kpi"><b>{{ n.new_uses|thousands }}</b><span>“I use this” ({{ n.uses|thousands }} total)</span></div>
+  <div class="kpi"><b>{{ n.new_uses|thousands }}</b><span>“I use this” votes ({{ n.uses|thousands }} total)</span></div>
+  <div class="kpi"><b>{{ n.new_voters|thousands }}</b><span>browsers that voted ({{ n.voters|thousands }} total)</span></div>
   <div class="kpi"><b>{{ n.suggested|thousands }}</b><span>suggestions</span></div>
   <div class="kpi"><b>{{ n.pending }}</b><span><a href="/mod">waiting in queue</a></span></div>
   <div class="kpi"><b>{{ n.reports }}</b><span><a href="/mod/reports">open reports</a></span></div>
@@ -43,5 +43,5 @@
     <div class="box"><h3>{{ title }}</h3>{{ ranking(rows) }}</div>
   {% endfor %}
 </div>
-<p class="hint">Anonymous daily totals: no cookies, no IP addresses stored, bots left out. Student and item numbers come from the database.</p>
+<p class="hint">Anonymous daily totals: no cookies, no IP addresses stored, bots left out. Vote and item numbers come from the database.</p>
 {% endblock %}

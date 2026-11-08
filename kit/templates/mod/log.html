@@ -1,13 +1,13 @@
 {% extends "mod/base.html" %}
 {% block mod %}
 <table>
-  <thead><tr><th>When (UTC)</th><th>Who</th><th>Action</th><th>Item</th><th>Detail</th></tr></thead>
+  <thead><tr><th>When (UTC)</th><th>Action</th><th>Item</th><th>Detail</th></tr></thead>
   <tbody>
   {% for r in rows %}
-    <tr><td>{{ r.created_at }}</td><td>{{ r.email or "system" }}</td><td>{{ r.action }}</td>
+    <tr><td>{{ r.created_at }}</td><td>{{ r.action }}</td>
       <td>{% if r.item_id %}<a href="/mod/items/{{ r.item_id }}">{{ r.name or r.item_id }}</a>{% endif %}</td><td>{{ r.detail }}</td></tr>
   {% else %}
-    <tr><td colspan="5">Nothing yet.</td></tr>
+    <tr><td colspan="4">Nothing yet.</td></tr>
   {% endfor %}
   </tbody>
 </table>

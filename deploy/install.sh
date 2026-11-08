@@ -38,8 +38,10 @@ if [[ ! -f "$ENV_FILE" ]]; then
   chmod 600 "$ENV_FILE"
 fi
 sed -i '/^SITE_URL=/d' "$ENV_FILE" && echo "SITE_URL=https://$DOMAIN" >> "$ENV_FILE"
-grep -q '^SMTP_HOST=.' "$ENV_FILE" || echo "  ⚠ SMTP_HOST is empty: login emails won't go out. Edit $ENV_FILE, then re-run."
-grep -q '^ADMIN_EMAIL=.' "$ENV_FILE" || echo "  ⚠ ADMIN_EMAIL is empty: nobody is a moderator yet."
+# the secret in your mod link https://<domain>/mod/key/<ADMIN_KEY> (made once, kept on updates)
+grep -q '^ADMIN_KEY=.' "$ENV_FILE" || { sed -i '/^ADMIN_KEY=/d' "$ENV_FILE"; echo "ADMIN_KEY=$(head -c 32 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32)" >> "$ENV_FILE"; }
+ADMIN_KEY=$(grep -oP '^ADMIN_KEY=\K.*' "$ENV_FILE")
+grep -q '^SMTP_HOST=.' "$ENV_FILE" || echo "  (optional) SMTP_HOST + ADMIN_EMAIL empty: no daily digest email. The site works without it."
 
 say "Container"
 proxy="${PROXY_CONTAINER:-}"
@@ -115,7 +117,9 @@ fi
 
 say "Done"
 echo "  Website:   https://$DOMAIN   (DNS must point here; Caddy fetches the certificate on the first visit)"
-echo "  Mod panel: https://$DOMAIN/mod   (stats: /mod/stats)"
+echo "  Mod link:  https://$DOMAIN/mod/key/$ADMIN_KEY"
+echo "             open it once per device (unlocks /mod and /mod/stats for 90 days). Keep it private."
+echo "             New key: delete the ADMIN_KEY line in $ENV_FILE and re-run (old devices stay unlocked until Lock)."
 echo "  Settings:  sudo nano $ENV_FILE   then re-run this script"
 echo "  Logs:      docker logs -f student-kit"
 echo "  Jobs:      systemctl list-timers 'kit-*'   ·   journalctl -u 'kit-job@*' -n 50"

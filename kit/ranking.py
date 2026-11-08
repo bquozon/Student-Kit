@@ -1,5 +1,4 @@
-"""Pure helpers with no database: card order, the "New" badge, domain normalisation, email → university,
-safe redirects."""
+"""Pure helpers with no database: card order, the "New" badge, domain normalisation, safe redirects."""
 
 from __future__ import annotations
 
@@ -9,7 +8,6 @@ from urllib.parse import parse_qsl, urlencode, urlsplit
 
 NEW_DAYS = 14
 NEW_MAX_USES = 3
-EMAIL = re.compile(r"^[^@\s]+@([a-z0-9-]+(?:\.[a-z0-9-]+)+)$")
 
 
 def rank(items: list[dict]) -> list[dict]:
@@ -44,12 +42,6 @@ def pretty_url(url: str) -> str:
 def valid_https(url: str) -> bool:
     p = urlsplit(url.strip())
     return p.scheme == "https" and bool(p.hostname) and "." in p.hostname and not p.username and len(url) <= 500
-
-
-def university_for(email: str, domains: dict[str, str]) -> str | None:
-    """The university code for a student email, or None. Only exact listed domains count (no subdomains)."""
-    m = EMAIL.match(email.strip().lower())
-    return domains.get(m.group(1)) if m else None
 
 
 def safe_next(url: str | None, default: str = "/") -> str:

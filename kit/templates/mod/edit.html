@@ -5,7 +5,7 @@
 <form class="box" method="post" action="/mod/item/{{ item.id }}">
   <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="back" value="/mod/items/{{ item.id }}">
   <h3>{{ item.name }} <span class="status {{ item.status }}">{{ item.status }}</span></h3>
-  <p>{{ item.uses_count }} uses{% if item.submitter %} · suggested by {{ item.submitter }}{% endif %}{% if item.link_fails %} · {{ item.link_fails }} failed link check(s){% endif %}{% if item.rejection_reason %} · rejected: {{ item.rejection_reason }}{% endif %}</p>
+  <p>{{ item.uses_count }} uses{% if item.submitted %} · suggested through the form{% endif %}{% if item.link_fails %} · {{ item.link_fails }} failed link check(s){% endif %}{% if item.rejection_reason %} · rejected: {{ item.rejection_reason }}{% endif %}</p>
   {{ fields(item, cities, categories, kinds) }}
   <div class="actions">
     <button class="btn" name="action" value="save">Save</button>

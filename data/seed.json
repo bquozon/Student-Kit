@@ -1267,25 +1267,5 @@
       "pinned": true,
       "status": "approved"
     }
-  ],
-  "email_domains": {
-    "ETH": [
-      "ethz.ch",
-      "student.ethz.ch"
-    ],
-    "UZH": [
-      "uzh.ch",
-      "student.uzh.ch"
-    ],
-    "ZHAW": [
-      "zhaw.ch",
-      "students.zhaw.ch"
-    ],
-    "EPFL": [
-      "epfl.ch"
-    ],
-    "UNIL": [
-      "unil.ch"
-    ]
-  }
+  ]
 }
