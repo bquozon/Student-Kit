@@ -12,7 +12,7 @@ def item(name, pinned=0, uses=0, approved="2026-11-01 10:00:00"):
 
 
 class Ranking(unittest.TestCase):
-    def test_pinned_first_by_name_then_uses_then_newest(self):
+    def test_uses_first_then_pinned_by_name_then_newest(self):
         items = [
             item("zeta", uses=5),
             item("Beta", pinned=1, uses=0),
@@ -20,8 +20,9 @@ class Ranking(unittest.TestCase):
             item("new", uses=9, approved="2026-10-01 00:00:00"),
             item("alpha", pinned=1, uses=100),
             item("none", uses=0, approved=None),
+            item("Ann", pinned=1, uses=0),
         ]
-        self.assertEqual([i["name"] for i in rank(items)], ["alpha", "Beta", "new", "old", "zeta", "none"])
+        self.assertEqual([i["name"] for i in rank(items)], ["alpha", "new", "old", "zeta", "Ann", "Beta", "none"])
 
     def test_new_badge(self):
         now = datetime(2026, 11, 8, tzinfo=timezone.utc)

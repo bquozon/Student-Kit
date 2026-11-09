@@ -11,11 +11,9 @@ NEW_MAX_USES = 3
 
 
 def rank(items: list[dict]) -> list[dict]:
-    """Pinned first (by name), then by uses_count desc, ties by approved_at desc (newest first)."""
-    pinned = sorted((i for i in items if i["pinned"]), key=lambda i: i["name"].casefold())
-    rest = sorted((i for i in items if not i["pinned"]), key=lambda i: i["approved_at"] or "", reverse=True)
-    rest.sort(key=lambda i: -i["uses_count"])  # stable: keeps the approved_at order inside equal counts
-    return pinned + rest
+    """Most uses ("I use this" votes) first; ties: pinned by name, then newest approved."""
+    items = sorted(items, key=lambda i: i["approved_at"] or "", reverse=True)
+    return sorted(items, key=lambda i: (-i["uses_count"], not i["pinned"], i["name"].casefold() if i["pinned"] else ""))
 
 
 def is_new(item: dict, now: datetime | None = None) -> bool:
