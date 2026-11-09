@@ -296,6 +296,20 @@ def privacy():
     return render_template("privacy.html")
 
 
+@app.get("/robots.txt")
+def robots():
+    body = f"User-agent: *\nDisallow: /mod\nDisallow: /suggest/check\n\nSitemap: {settings.SITE_URL}/sitemap.xml\n"
+    return body, {"Content-Type": "text/plain"}
+
+
+@app.get("/sitemap.xml")
+def sitemap():
+    paths = [r[0] for r in g.db.execute("SELECT slug FROM cities ORDER BY position")] + ["suggest", "privacy"]
+    urls = "".join(f"<url><loc>{settings.SITE_URL}/{p}</loc></url>" for p in paths)
+    body = f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>'
+    return body, {"Content-Type": "application/xml"}
+
+
 @app.get("/health")
 def health():
     g.db.execute("SELECT 1")

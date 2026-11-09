@@ -69,6 +69,13 @@ class AppTest(unittest.TestCase):
         for gone in ("/login", "/mine", "/login/verify"):
             self.assertEqual(self.c.get(gone).status_code, 404, gone)
 
+    def test_robots_and_sitemap(self):
+        self.assertIn(b"Sitemap: http://localhost/sitemap.xml", self.c.get("/robots.txt").data)
+        r = self.c.get("/sitemap.xml")
+        self.assertEqual(r.mimetype, "application/xml")
+        self.assertIn(b"<loc>http://localhost/zurich</loc>", r.data)
+        self.assertIn(b"<loc>http://localhost/lausanne</loc>", r.data)
+
     def test_csrf_required(self):
         self.assertEqual(self.c.post("/suggest", data=BASE).status_code, 400)
 
