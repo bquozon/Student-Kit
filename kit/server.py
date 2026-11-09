@@ -5,7 +5,7 @@
 No accounts: anyone browses, votes ("I use this", one per browser) and suggests links; only the owner moderates.
 
 Public:  /  /<city>  /suggest  /suggest/check  /privacy  POST /use/<id>  /hit (anonymous stats)  GET /health
-Mod:     /mod …  (see mod.py; unlocked on a device by opening /mod/key/<ADMIN_KEY> once)
+Mod:     /mod …  (see mod.py; log in at /mod with ADMIN_KEY)
 """
 
 from __future__ import annotations
@@ -34,8 +34,8 @@ VERSION = hashlib.sha256(b"".join(p.read_bytes() for p in sorted(_static.glob("*
 FLASH = {
     "sent": "Thanks! A moderator will check it within a few days.",
     "sent_warn": "Thanks! A moderator will check it within a few days. Note: we couldn't reach that URL just now.",
-    "mod": "Moderation unlocked on this device.",
-    "logout": "Moderation locked on this device.",
+    "mod": "Logged in on this device.",
+    "logout": "Logged out.",
     "saved": "Saved.",
 }
 CSP = (

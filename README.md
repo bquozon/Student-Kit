@@ -11,7 +11,7 @@ It uses the same stack and deploy setup as [polyuni.ch](https://polyuni.ch): **F
 | Path | What it does |
 |---|---|
 | `kit/server.py` | Public routes: city pages, the anonymous vote, the suggest form, CSRF and security headers |
-| `kit/mod.py` | `/mod`: the secret-link unlock, queue, reports, all items, categories, stats, log |
+| `kit/mod.py` | `/mod`: the login form, queue, reports, all items, categories, stats, log |
 | `kit/auth.py` | The mod and voter cookies, in-memory rate limits |
 | `kit/ranking.py` | Pure helpers: card order, "New" badge, domain normalisation, safe redirects |
 | `kit/forms.py` | Item form validation shared by the suggest page and the mod edits |
@@ -32,7 +32,7 @@ python3.12 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/playwright install chromium     # only for the end-to-end test
 cp .env.example .env                       # set ADMIN_KEY
 .venv/bin/python -m kit.seed               # creates data/kit.sqlite and imports seed.json
-.venv/bin/python -m kit.server             # http://localhost:8800, mod: http://localhost:8800/mod/key/<ADMIN_KEY>
+.venv/bin/python -m kit.server             # http://localhost:8800, mod: http://localhost:8800/mod (log in with ADMIN_KEY)
 ```
 
 Tests and lint (the same settings as polyuni: ruff, 120 columns):
@@ -46,16 +46,16 @@ Tests and lint (the same settings as polyuni: ruff, 120 columns):
 | Variable | Meaning |
 |---|---|
 | `SITE_URL` | Public address. `https://` turns on Secure cookies and HSTS |
-| `ADMIN_KEY` | The secret in your mod link `/mod/key/<ADMIN_KEY>`. If it's empty, the mod panel is off. The installer generates it |
+| `ADMIN_KEY` | The mod password you type at `/mod`. If it's empty, the mod panel is off. The installer generates it |
 | `ADMIN_EMAIL`, `SMTP_*`, `MAIL_FROM` | **Optional.** A daily email when suggestions or link reports are waiting. For kMail: `mail.infomaniak.com`, port 465, your full address and password (an app password if you use two-factor login) |
 | `DATA_DIR` | Where `kit.sqlite`, `backups/` and `outbox.txt` live. The container uses `/data` |
 
 ## How it works
 
 - **Moderation:**
-  - Open `https://<domain>/mod/key/<ADMIN_KEY>` once on each device. It sets a 90-day cookie and redirects you to `/mod`, so the key leaves the address bar.
+  - Open `https://<domain>/mod` and log in with `ADMIN_KEY`. It sets a 90-day cookie on that device. Ten wrong tries lock logins from that IP for 15 minutes.
   - Anyone else gets a 404 on every `/mod` page. Wrong keys are rate-limited (10 per IP per 15 min).
-  - The "Lock" button in the top bar ends the session on that device.
+  - The "Log out" button in the top bar ends the session on that device.
 - **Votes:**
   - The first vote gives the browser a random id in a cookie, and only its SHA-256 is stored. Voting again on the same item removes the vote.
   - Each IP gets 60 votes per hour. Someone who clears cookies can vote again; that's the price of having no accounts.

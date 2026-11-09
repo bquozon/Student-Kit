@@ -1,6 +1,6 @@
 """/mod: moderation queue, reports, all items, categories, stats, log. Owner only; every action goes to mod_log.
 
-No login form: opening /mod/key/<ADMIN_KEY> once unlocks the panel on that device (a 90-day cookie)."""
+Like polyuni's admin: /mod shows a login form until you enter ADMIN_KEY, then a 90-day session cookie on that device."""
 
 from __future__ import annotations
 
@@ -14,16 +14,26 @@ bp = Blueprint("mod", __name__, url_prefix="/mod")
 
 @bp.before_request
 def only_mods():
-    if not g.is_mod and request.endpoint != "mod.unlock":
-        abort(404)  # the panel doesn't exist for anyone else
+    if not settings.ADMIN_KEY:
+        abort(404)  # no key set: the panel is off
+    if not g.is_mod and request.endpoint != "mod.login":
+        return login_page(), 401
 
 
-@bp.get("/key/<key>")
-def unlock(key: str):
-    sid = auth.open_mod_session(g.db, key, auth.client_ip())
+def login_page(error: str = ""):
+    return render_template(
+        "mod/login.html",
+        error=error,
+        next=request.form.get("next") or (request.full_path.rstrip("?") if request.method == "GET" else "/mod"),
+    )
+
+
+@bp.post("/login")
+def login():
+    sid = auth.open_mod_session(g.db, request.form.get("key", ""), auth.client_ip())
     if not sid:
-        abort(404)
-    resp = redirect("/mod?m=mod")  # off the secret URL at once, so it doesn't stay in the address bar
+        return login_page("Wrong key, or too many tries (then wait 15 minutes)."), 403
+    resp = redirect(with_msg(safe_next(request.form.get("next"), "/mod"), "mod"))
     auth.set_cookie(resp, auth.MOD_COOKIE, sid, settings.SESSION_DAYS)
     return resp
 

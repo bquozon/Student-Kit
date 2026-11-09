@@ -53,7 +53,7 @@ class AppTest(unittest.TestCase):
 
     def mod(self):
         m = self.client()
-        r = m.get(f"/mod/key/{KEY}")
+        r = self.post("/mod/login", m, key=KEY, next="/mod")
         self.assertEqual(r.location, "/mod?m=mod")
         return m
 
@@ -104,16 +104,19 @@ class AppTest(unittest.TestCase):
         self.assertIn(b"wait an hour", r.data)
 
     # ------------------------------------------------------------------ mod
-    def test_mod_panel_is_hidden_without_the_key(self):
-        self.assertEqual(self.c.get("/mod").status_code, 404)
-        self.assertEqual(self.c.get("/mod/key/wrong").status_code, 404)
-        self.assertEqual(self.c.get("/mod/stats").status_code, 404)
+    def test_mod_panel_asks_for_the_key(self):
+        r = self.c.get("/mod/stats?days=7")
+        self.assertEqual(r.status_code, 401)
+        self.assertIn(b'value="/mod/stats?days=7"', r.data)  # back to the page you asked for after login
+        self.assertEqual(self.post("/mod/login", key="wrong").status_code, 403)
+        self.assertEqual(self.post("/mod/login", self.client(), key=KEY, next="//evil.com").location, "/mod?m=mod")
         self.assertNotIn(b"Moderation", self.c.get("/zurich").data)
 
     def test_mod_key_guessing_is_rate_limited(self):
+        c = self.client()
         for _ in range(10):
-            self.c.get("/mod/key/guess")
-        self.assertEqual(self.c.get(f"/mod/key/{KEY}").status_code, 404)  # even the right key, for 15 min
+            self.post("/mod/login", c, key="guess")
+        self.assertEqual(self.post("/mod/login", c, key=KEY).status_code, 403)  # even the right key, for 15 min
 
     def test_mod_approve_and_reject(self):
         base = {**BASE, "city": "lausanne", "category": "campus", "kind": "App"}
@@ -148,7 +151,7 @@ class AppTest(unittest.TestCase):
         self.assertEqual(m.get("/mod/stats?days=7").status_code, 200)
         self.assertEqual(m.get("/mod/log").status_code, 200)
         self.post("/mod/logout", m)
-        self.assertEqual(m.get("/mod").status_code, 404)
+        self.assertEqual(m.get("/mod").status_code, 401)
 
     def test_link_check_reports_after_two_failures(self):
         dead = self.item_id("Splitwise")

@@ -1,6 +1,6 @@
 """No accounts. Two cookies identify a browser, nothing more:
 
-- `mod`: set when the owner opens the secret link /mod/key/<ADMIN_KEY> (like polyuni's admin key). 90 days.
+- `mod`: set when the owner logs in at /mod with ADMIN_KEY (like polyuni's admin login). 90 days.
 - `voter`: a random id for the anonymous "I use this" vote, so the same browser can't vote twice and can undo.
 
 Only SHA-256 hashes of both are stored. Rate limits live in memory (one process, like polyuni)."""
@@ -57,7 +57,7 @@ limiter = Limiter()
 
 
 def open_mod_session(con, key: str, ip: str) -> str | None:
-    """The secret link: a new session id for the cookie if `key` is ADMIN_KEY. Wrong guesses are rate-limited."""
+    """The login form: a new session id for the cookie if `key` is ADMIN_KEY. Wrong guesses are rate-limited."""
     if not settings.ADMIN_KEY or not limiter.allow("modkey:" + ip, 10, 900):
         return None
     if not hmac.compare_digest(key.encode(), settings.ADMIN_KEY.encode()):

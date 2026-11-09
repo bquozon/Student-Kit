@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS reports (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- the mod's devices (opened the secret /mod/key/<ADMIN_KEY> link); id = SHA-256 of the cookie value
+-- the mod's devices (logged in at /mod with ADMIN_KEY); id = SHA-256 of the cookie value
 CREATE TABLE IF NOT EXISTS sessions (
   id TEXT PRIMARY KEY,
   expires_at TEXT NOT NULL

@@ -33,7 +33,7 @@ class SubmitApproveVisible(unittest.TestCase):
             "DATA_DIR": str(cls.data),
             "SITE_URL": cls.base,
             "SMTP_HOST": "",
-            "ADMIN_KEY": "e2e-secret-key",
+            "ADMIN_KEY": "e2e-secret-key-0123456789",
             "SEED_FILE": str(ROOT / "data" / "seed.json"),
         }
         subprocess.run([sys.executable, "-m", "kit.seed"], cwd=ROOT, env=env, check=True, capture_output=True)
@@ -75,9 +75,10 @@ class SubmitApproveVisible(unittest.TestCase):
         expect(visitor.locator("text=A moderator will check it")).to_be_visible()
 
         mod = self.browser.new_context().new_page()
-        mod.goto(self.base + "/mod/key/e2e-secret-key")
-        expect(mod.locator("text=Moderation unlocked")).to_be_visible()
-        self.assertNotIn("e2e-secret-key", mod.url)  # redirected off the secret link
+        mod.goto(self.base + "/mod")
+        mod.fill("#key", "e2e-secret-key-0123456789")
+        mod.click("text=Log in")
+        expect(mod.locator("text=Logged in on this device")).to_be_visible()
         card = mod.locator("form.box", has_text="Mensa Roulette")
         card.locator("button[value=approve]").click()
         expect(mod.locator("text=The queue is empty")).to_be_visible()
