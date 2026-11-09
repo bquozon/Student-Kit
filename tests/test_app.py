@@ -103,6 +103,24 @@ class AppTest(unittest.TestCase):
         r = self.post("/suggest", name="One too many", url="https://t9.ch", **BASE)
         self.assertIn(b"wait an hour", r.data)
 
+    def test_notrack_and_mods_are_not_counted(self):
+        total = lambda: self.con.execute("SELECT coalesce(sum(n), 0) FROM stat").fetchone()[0]  # noqa: E731
+        c = self.client()
+        before = total()
+        c.get("/zurich")
+        self.assertGreater(total(), before)  # a normal visit counts
+        c.get("/?notrack=1")
+        before = total()
+        c.get("/zurich")
+        c.post("/hit", data='{"t": "search", "q": "mensa"}')
+        self.assertEqual(total(), before)
+        c.get("/zurich?notrack=0")
+        self.assertGreater(total(), before)
+        m = self.mod()  # its setup visit, before login, counts
+        before = total()
+        m.get("/zurich")
+        self.assertEqual(total(), before)
+
     # ------------------------------------------------------------------ mod
     def test_mod_panel_asks_for_the_key(self):
         r = self.c.get("/mod/stats?days=7")

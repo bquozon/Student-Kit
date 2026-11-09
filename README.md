@@ -54,6 +54,7 @@ Tests and lint (the same settings as polyuni: ruff, 120 columns):
 
 - **Moderation:**
   - Open `https://<domain>/mod` and log in with `ADMIN_KEY`. It sets a 90-day cookie on that device. Ten wrong tries lock logins from that IP for 15 minutes.
+  - Your own visits: a logged-in device is never counted in the stats. To leave out another device, open `https://<domain>/?notrack=1` once (`?notrack=0` counts it again).
   - Anyone else gets a 404 on every `/mod` page. Wrong keys are rate-limited (10 per IP per 15 min).
   - The "Log out" button in the top bar ends the session on that device.
 - **Votes:**

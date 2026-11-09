@@ -57,6 +57,9 @@ def before():
         return
     g.db = db.connect()
     g.is_mod = auth.is_mod(g.db, request.cookies.get(auth.MOD_COOKIE))
+    # like polyuni: open ?notrack=1 once on your own devices (?notrack=0 undoes it); logged-in mods never count
+    g.notrack = request.args.get("notrack") if request.args.get("notrack") in ("0", "1") else None
+    g.tracked = not g.is_mod and (g.notrack or request.cookies.get("notrack")) != "1"
     g.csrf = request.cookies.get("csrf")
     if not g.csrf:
         g.csrf, g.new_csrf = secrets.token_urlsafe(24), True
@@ -78,6 +81,10 @@ def teardown(_exc):
 def headers(resp):
     if g.get("new_csrf"):
         set_cookie(resp, "csrf", g.csrf, 365)
+    if g.get("notrack") == "1":
+        set_cookie(resp, "notrack", "1", 400)  # browsers cap cookies at 400 days
+    elif g.get("notrack") == "0":
+        resp.delete_cookie("notrack")
     resp.headers.setdefault("Content-Security-Policy", CSP)
     resp.headers["X-Content-Type-Options"] = "nosniff"
     resp.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
@@ -174,15 +181,16 @@ def city(slug: str):
         if its:
             sections.append({"cat": cat, "cards": its, "hidden": all(i["hidden"] for i in its)})
     updated = con.execute("SELECT max(approved_at) FROM items WHERE status='approved'").fetchone()[0]
-    stats.view(
-        con,
-        client_ip(),
-        request.user_agent.string,
-        request.referrer or "",
-        request.headers.get("Accept-Language", ""),
-        c["label"],
-        request.host,
-    )
+    if g.tracked:
+        stats.view(
+            con,
+            client_ip(),
+            request.user_agent.string,
+            request.referrer or "",
+            request.headers.get("Accept-Language", ""),
+            c["label"],
+            request.host,
+        )
     resp = make_response(
         render_template(
             "city.html",
@@ -226,7 +234,7 @@ def use(item_id: int):
 
 @app.post("/hit")
 def hit():
-    if auth.limiter.allow("hit:" + client_ip(), 300, 3600):
+    if g.tracked and auth.limiter.allow("hit:" + client_ip(), 300, 3600):
         try:
             h = json.loads(request.get_data(as_text=True) or "{}")
         except ValueError:
