@@ -83,7 +83,7 @@ Tests and lint (the same settings as polyuni: ruff, 120 columns):
    cd ~/Student-Kit && sudo bash deploy/install.sh kit.example.ch
    ```
 
-3. The installer prints your mod link at the end. Open it once on each device.
+3. The installer prints your mod login and key at the end. Log in at `/mod` on each device.
 
 `install.sh` copies the code to `/opt/student-kit` and builds the `student-kit` image. It then starts the container on the network of the Caddy container that holds ports 80/443 (solidtime's, the same one polyuni.ch uses) and runs the seed. It also installs three systemd timers and adds a single site block to that Caddyfile. Before reloading, it validates the Caddyfile, and if Caddy rejects the change it restores the backup. Re-running it keeps `data/`, the settings file and your `ADMIN_KEY`.
 
