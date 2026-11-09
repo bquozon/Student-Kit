@@ -31,6 +31,8 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .me{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:4px 14px;padding-block:12px 0;font-size:14px;font-weight:700}
 .me a,.me button{color:var(--muted);text-decoration:none;background:none;border:0;font:inherit;cursor:pointer;padding:4px 0}
 .me a:hover,.me button:hover{color:var(--fg)}
+.me a.btn{font:800 14px var(--display);color:var(--bg);background:var(--fg);border:2px solid var(--fg);padding:5px 14px}
+.me a.btn:hover{color:var(--bg);opacity:.85}
 .me form{margin:0}
 .flash{margin:12px 0 0;padding:10px 16px;border-radius:14px;background:color-mix(in srgb,var(--ok) 14%,var(--surface));border:2px solid color-mix(in srgb,var(--ok) 35%,transparent);font-weight:700}
 .flash.err{background:color-mix(in srgb,var(--bad) 12%,var(--surface));border-color:color-mix(in srgb,var(--bad) 35%,transparent)}
